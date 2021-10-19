@@ -1,0 +1,38 @@
+{% extends 'social_networks/base.html' %}
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title></title>
+    </head>
+    <body>
+        <header>
+            
+        </header>
+        <main>
+            {% block content %}
+                <p>Topic - {{ topic.name }}</p>
+                <div>
+                    <a href="{% url 'social_networks:create_entry' topic.id %}">Create entry</a>
+                </div>
+                <p>Entries:</p>
+                <ul>
+                    {% for entry in entries %}
+                    <li>
+                        <h2>
+                            <a href="{% url 'social_networks:entry_page' topic.id entry.id %}">{{ entry.title }}</a>
+                        </h2>
+                        <p>{{ entry.text }}</p>
+                    </li>
+                    {% endfor %}
+                </ul>
+
+
+
+            {% endblock content %}
+        </main>
+        <footer>
+            
+        </footer>
+    </body>
+</html>

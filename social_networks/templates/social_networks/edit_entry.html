@@ -1,0 +1,25 @@
+{% extends 'social_networks/base.html' %}
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title></title>
+    </head>
+    <body>
+       <header>
+           
+       </header> 
+       <main>
+           {% block content %}
+                <form action="{% url 'social_networks:edit_entry' entry_id %}" method='POST'>
+                    {% csrf_token %}
+                    {{ form.as_p }}
+                    <button name='submit'>Save</button>
+                </form>
+           {% endblock content%}
+       </main>
+       <footer>
+           
+       </footer>
+    </body>
+</html>
