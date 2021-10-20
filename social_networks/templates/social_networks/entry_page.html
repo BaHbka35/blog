@@ -23,22 +23,38 @@
                   <ul>
                     {% for comment in comments %}
                       <li>
-                        <p>{{ comment.text }}</p>
+                        <p>{{ comment }}</p>
+                        <p>{{ comment.comment_text }}</p>
                         <form action="{% url 'social_networks:delete_comment' entry.id comment.comment_id %}">
                             <button name="submit">delet</button>
                         </form>
+
+                        <ol>
+                          {% for answer in comment.answers %}
+                            <p>{{ answer }}</p>
+                          {% endfor %}
+                        </ol>
+
+                        <div>
+                          <form name="answer_comment_form" action="{% url 'social_networks:answer_on_comment' entry.id comment.comment_id %}" method="POST">
+                            {% csrf_token %}
+                            {{ answer_comment_form.as_p }}
+                            <button name="submit">Answer</button>
+                          </form>
+                        </div>
                       </li>
                     {% endfor %}
                   </ul>
                 </div>
 
                 <div>
-                  <form action="{% url 'social_networks:entry_page' topic_id entry.id %}" method="POST">
+                  <form name="comment_form" action="{% url 'social_networks:entry_page' topic_id entry.id %}" method="POST">
                     {% csrf_token %}
-                    {{ form.as_p }}
+                    {{ comment_form.as_p }}
                     <button name="submit">Send</button>
                   </form>
                 </div>
+
 
             {% endblock content %}
         </main>

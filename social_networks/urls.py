@@ -20,6 +20,8 @@ urlpatterns = [
     path('edit/entry/xxx<int:entry_id>', views.edit_entry, name='edit_entry'),
     # Delete entry
     path('delete/entry/xxx<int:entry_id>', views.delete_entry, name="delete_entry"),
-    #Delete specidic comment.
-    path('delete/comment/xxx<int:entry_id>xxx/xxx<str:comment_id>', views.delete_comment, name='delete_comment')
+    # Delete specidic comment.
+    path('delete/comment/xxx<int:entry_id>xxx/xxx<str:comment_id>', views.delete_comment, name='delete_comment'),
+    # Create answer on comment.
+    path('answer/on/comment/xxx<int:entry_id>/xxx<str:comment_id>', views.answer_on_comment, name='answer_on_comment'),
 ]
