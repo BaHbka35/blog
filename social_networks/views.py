@@ -31,8 +31,8 @@ def get_comments(entry_id):
         
         answer_on_comments = comments_collection.find({
             "main": False,
-            # "entry_id": entry_id,
-            '_id': ObjectId(comment_id),
+            "entry_id": entry_id,
+            'comment_id': str(comment_id),
             })
 
         answer_list = []

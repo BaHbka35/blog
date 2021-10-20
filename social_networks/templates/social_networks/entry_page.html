@@ -23,7 +23,6 @@
                   <ul>
                     {% for comment in comments %}
                       <li>
-                        <p>{{ comment }}</p>
                         <p>{{ comment.comment_text }}</p>
                         <form action="{% url 'social_networks:delete_comment' entry.id comment.comment_id %}">
                             <button name="submit">delet</button>
@@ -31,7 +30,9 @@
 
                         <ol>
                           {% for answer in comment.answers %}
-                            <p>{{ answer }}</p>
+                            <li>
+                              <p>{{ answer }}</p>
+                            </li>
                           {% endfor %}
                         </ol>
 
