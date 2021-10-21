@@ -3,14 +3,14 @@ from .models import Topic, Entry
 from .forms import CreateEntryForm, CommentForm, AnswerOnCommentForm
 
 import pymongo
-from .mongodb_data import mongodb_link
+from .mongodb_data import MONGODB_LINK
 
 from bson.objectid import ObjectId
 
 
 # Function for get collection with contains comments
 def get_comments_collection():
-    client = pymongo.MongoClient(mongodb_link)
+    client = pymongo.MongoClient(MONGODB_LINK)
     db = client.App
     collection = db.comments
     
