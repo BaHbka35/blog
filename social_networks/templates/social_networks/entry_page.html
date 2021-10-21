@@ -1,9 +1,11 @@
 {% extends 'social_networks/base.html' %}
+{% load static %}
 <!DOCTYPE html>
 <html>
     <head>
-        <meta charset="utf-8">
-        <title></title>
+      {% block head %}
+      <link rel="stylesheet" href="{% static 'css/style.css' %}" type="text/css">
+      {% endblock head %}
     </head>
     <body>
         <header>
@@ -23,22 +25,46 @@
                   <ul>
                     {% for comment in comments %}
                       <li>
-                        <p>{{ comment.text }}</p>
-                        <form action="{% url 'social_networks:delete_comment' entry.id comment.comment_id %}">
-                            <button name="submit">delet</button>
-                        </form>
+                        <div class="main-comment">
+                          <p>{{ comment.comment_text }}</p>
+                          <form action="{% url 'social_networks:delete_comment' entry.id comment.comment_id %}">
+                              <button name="submit">delet</button>
+                          </form>
+                        </div>
+                        <ol>
+                          {% for answer in comment.answers %}
+                            <li>
+                              <div class="answer-on-comment">
+                                <p>{{ answer.answer_text }}</p>
+                                <form action="{% url 'social_networks:delete_comment_answer' entry.id answer.answer_id %}" method="post">
+                                  {% csrf_token %}
+                                  <button name="submit">delete</button>
+                                </form>
+                              </div>
+                            </li>
+                          {% endfor %}
+                        </ol>
+
+                        <div>
+                          <form name="answer_comment_form" action="{% url 'social_networks:answer_on_comment' entry.id comment.comment_id %}" method="POST">
+                            {% csrf_token %}
+                            {{ answer_comment_form.as_p }}
+                            <button name="submit">Answer</button>
+                          </form>
+                        </div>
                       </li>
                     {% endfor %}
                   </ul>
                 </div>
 
                 <div>
-                  <form action="{% url 'social_networks:entry_page' topic_id entry.id %}" method="POST">
+                  <form name="comment_form" action="{% url 'social_networks:entry_page' topic_id entry.id %}" method="POST">
                     {% csrf_token %}
-                    {{ form.as_p }}
+                    {{ comment_form.as_p }}
                     <button name="submit">Send</button>
                   </form>
                 </div>
+
 
             {% endblock content %}
         </main>
