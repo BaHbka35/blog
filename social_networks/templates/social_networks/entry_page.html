@@ -19,6 +19,7 @@
                 
                 <div>
                   <h2>{{ entry.title }}</h2>
+                  <a href="{% url 'social_networks:add_data' topic_id entry.id %}">Add some data</a>
                   <p>{{ entry.text }}</p>
                 </div>  
                 <div>

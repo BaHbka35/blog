@@ -7,6 +7,8 @@ from .mongodb_data import MONGODB_LINK
 
 from bson.objectid import ObjectId
 
+from datetime import datetime
+
 
 # Function for get collection with contains comments
 def get_comments_collection():
@@ -24,7 +26,7 @@ def get_comments(entry_id):
     comments_collection = get_comments_collection()
 
     # Recive main comments
-    comments_from_db = comments_collection.find({"main": True ,"entry_id": entry_id,})
+    comments_from_db = comments_collection.find({"comment_lvl": 1 ,"entry_id": entry_id,})
     # Will contein structure with main comments with their id and subcomments
     comments_list = []
 
@@ -32,19 +34,17 @@ def get_comments(entry_id):
         comment_id = comment["_id"]
         comment_text = comment['comment_text']
         
-        # Recive subcomments
-        answer_on_comments = comments_collection.find({
-            "main": False,
-            "entry_id": entry_id,
-            'comment_id': str(comment_id),
-            })
+        # Recive subcomments.
+        try:
+            answers = comment['answers']
         
         # Will contein subcomments and their id
-        answer_list = []
-        for answer in answer_on_comments:
-            answer_text = answer["answer_comment_text"]
-            answer_id = answer["_id"]
-            answer_list.append({"answer_text": answer_text, 'answer_id': answer_id,})
+            answer_list = []
+            for answer in answers:
+                answer_text = answer["text"]
+                answer_list.append({"answer_text": answer_text, 'answer_id': ObjectId('6171537158eea764cdbd5b2a')})
+        except KeyError:
+            answer_list = []
 
         comments_list.append({
             "comment_id": comment_id,
@@ -102,26 +102,29 @@ def entry_page(request, topic_id, entry_id):
       
     else:
       # Form with data that contain a comment.
-      print(request.POST)
-      comment_form = CommentForm(request.POST)
-      if comment_form.is_valid():
+        comment_form = CommentForm(request.POST)
+        if comment_form.is_valid():
         
-        comments_collection = get_comments_collection()
+            comments_collection = get_comments_collection()
 
-        # Get comment from form
-        comment_text = comment_form.cleaned_data['comment']
+            # Get comment from form
+            comment_text = comment_form.cleaned_data['comment']
+            # Get current datetime
+            datetime_now = datetime.now()
 
-        # Comment format for mongodb
-        comment_for_db = {
-            "main": True,
-            "entry_id": entry_id,
-            "comment_text": comment_text,
-        }
-        # Writing comment to mongodb
-        comments_collection.insert_one(comment_for_db).inserted_id
-        
-        comments_list = get_comments(entry_id)
-        comment_form = CommentForm()
+            # Comment format for mongodb
+            comment_for_db = {
+                "comment_lvl": 1,
+                "entry_id": entry_id,
+                "comment_author": 'xxx',
+                "comment_text": comment_text,
+                "comment_time": datetime_now,
+            }
+            # Writing comment to mongodb
+            comments_collection.insert_one(comment_for_db).inserted_id
+            
+            comments_list = get_comments(entry_id)
+            comment_form = CommentForm()
 
     answer_comment_form = AnswerOnCommentForm()
     content = {
@@ -193,13 +196,7 @@ def delete_comment(request, entry_id, comment_id):
     comments_collection = get_comments_collection()
     # Delete comment
     comments_collection.remove({"_id": ObjectId(comment_id)})
-    # Delete subcomments that belong main comment
-    comments_collection.remove({
-        "main": False,
-        "entry_id": entry_id,
-        'comment_id': str(comment_id),
-        })
-
+    
     return redirect('social_networks:entry_page', topic_id=topic_id, entry_id=entry_id)
 
 
@@ -211,18 +208,35 @@ def answer_on_comment(request, entry_id, comment_id):
     form = AnswerOnCommentForm(request.POST)
     if form.is_valid():
         comment_text = form.cleaned_data['comment']
-        
-        # Subcomment format for mongodb
-        comment_for_db = {
-            'main': False,
-            'entry_id': entry_id,
-            'comment_id': comment_id,
-            'answer_comment_text': comment_text,
-        }
 
         comments_collection = get_comments_collection()
-        # Insert subcomment to mognodb
-        comments_collection.insert_one(comment_for_db).inserted_id
+
+        comment = comments_collection.find_one({"_id": ObjectId(comment_id)})
+
+        datetime_now = datetime.now()
+
+        try:
+            answers = comment['answers']
+            answers = answers + [{
+                "comment_lvl": 2,
+                "comment_author": "yyy",
+                "text": comment_text,
+                'datetime_now': datetime_now,
+                }]
+            comments_collection.update(
+            {"_id": ObjectId(comment_id)},
+            {"$set": {"answers": answers}
+            })
+        except KeyError:
+            comments_collection.update(
+            {"_id": ObjectId(comment_id)},
+            {"$set": {"answers": [{
+                "comment_lvl": 2,
+                "comment_author": "yyy",
+                "text": comment_text,
+                'datetime_now': datetime_now,
+            }]}}
+            )
 
     return redirect('social_networks:entry_page', topic_id=topic_id, entry_id=entry_id)
 
@@ -236,4 +250,33 @@ def delete_comment_answer(request, entry_id, comment_id):
     # Delete subcomment
     comment_collection.remove({"_id": ObjectId(comment_id)})
 
+    return redirect('social_networks:entry_page', topic_id=topic_id, entry_id=entry_id)
+
+
+def clear_mongodb(request):
+    collection = get_comments_collection()
+    collection.remove()
+    return redirect('social_networks:index')
+
+def add_data(request, topic_id, entry_id):
+    comments_collection = get_comments_collection()
+    # Get current datetime
+    datetime_now = datetime.now()
+    # Get current datetime
+    datetime_now = datetime.now()
+
+    # Comment format for mongodb
+    comment_for_db = {
+        "comment_lvl": 1,
+        "entry_id": entry_id,
+        "comment_author": 'xxx',
+        "comment_text": 'some_comment_lvl_1',
+        "comment_time": datetime_now,
+        'answers': [
+        {'comment_lvl': 2, "comment_author": "yyy", 'text': 'some_comment_lvl_2.1', "datetime_now": datetime_now},
+        {'comment_lvl': 2, "comment_author": "yyy", 'text': 'some_comment_lvl_2.3', "datetime_now": datetime_now},
+        {'comment_lvl': 2, "comment_author": "yyy", 'text': 'some_comment_lvl_2.3', "datetime_now": datetime_now}
+        ]
+    }
+    comments_collection.insert_one(comment_for_db).inserted_id
     return redirect('social_networks:entry_page', topic_id=topic_id, entry_id=entry_id)
