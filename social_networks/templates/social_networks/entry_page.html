@@ -35,7 +35,11 @@
                           {% for answer in comment.answers %}
                             <li>
                               <div class="answer-on-comment">
-                                <p>{{ answer.answer_text }}</p>  
+                                <p>{{ answer.answer_text }}</p>
+                                <form action="{% url 'social_networks:delete_comment_answer' entry.id answer.answer_id %}" method="post">
+                                  {% csrf_token %}
+                                  <button name="submit">delete</button>
+                                </form>
                               </div>
                             </li>
                           {% endfor %}
