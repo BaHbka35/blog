@@ -37,7 +37,6 @@ def get_comments(entry_id):
 
         answer_list = []
         for answer in answer_on_comments:
-            print(answer)
             answer_text = answer["answer_comment_text"]
             answer_id = answer["_id"]
             answer_list.append({"answer_text": answer_text, 'answer_id': answer_id,})

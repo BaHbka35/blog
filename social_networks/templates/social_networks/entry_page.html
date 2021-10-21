@@ -3,9 +3,9 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <meta charset="utf-8">
-        <link rel="stylesheet" href="{% static 'css/style.css' %}" type="text/css">
-        <title></title>
+      {% block head %}
+      <link rel="stylesheet" href="{% static 'css/style.css' %}" type="text/css">
+      {% endblock head %}
     </head>
     <body>
         <header>
@@ -34,7 +34,7 @@
                         <ol>
                           {% for answer in comment.answers %}
                             <li>
-                              <div class="answer_on_comment">
+                              <div class="answer-on-comment">
                                 <p>{{ answer.answer_text }}</p>  
                               </div>
                             </li>
