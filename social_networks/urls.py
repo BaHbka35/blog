@@ -18,10 +18,12 @@ urlpatterns = [
     path('create/entry/xxx<int:topic_id>', views.create_entry, name='create_entry'),
     # Page for editin existing entry.
     path('edit/entry/xxx<int:entry_id>', views.edit_entry, name='edit_entry'),
-    # Delete entry
+    # Delete entry.
     path('delete/entry/xxx<int:entry_id>', views.delete_entry, name="delete_entry"),
     # Delete specidic comment.
     path('delete/comment/xxx<int:entry_id>xxx/xxx<str:comment_id>', views.delete_comment, name='delete_comment'),
     # Create answer on comment.
-    path('answer/on/comment/xxx<int:entry_id>/xxx<str:comment_id>', views.answer_on_comment, name='answer_on_comment'),
+    path('answer/on/comment/create/xxx<int:entry_id>/xxx<str:comment_id>', views.answer_on_comment, name='answer_on_comment'),
+    # Delete answer on comment.
+    path('answer/on/comment/delete/xxx<int:entry_id>/xxx<str:comment_id>', views.delete_comment_answer, name="delete_comment_answer"),
 ]

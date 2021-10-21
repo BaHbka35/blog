@@ -22,7 +22,7 @@ def get_comments(entry_id):
     # Connection to mongodb
     comments_collection = get_comments_collection()
 
-    comments_from_db = comments_collection.find({"main": True ,"entry_id": entry_id,}) # "_id": ObjectId('616f7d1f2cc9f0e0419a6dbc')
+    comments_from_db = comments_collection.find({"main": True ,"entry_id": entry_id,})
     comments_list = []
 
     for comment in comments_from_db:
@@ -39,8 +39,8 @@ def get_comments(entry_id):
         for answer in answer_on_comments:
             print(answer)
             answer_text = answer["answer_comment_text"]
-            answer_list.append(answer_text)
-            # answer_list.append({'answer_text': answer_text})
+            answer_id = answer["_id"]
+            answer_list.append({"answer_text": answer_text, 'answer_id': answer_id,})
 
         comments_list.append({
             "comment_id": comment_id,
@@ -48,11 +48,19 @@ def get_comments(entry_id):
             "answers": answer_list,
             })
 
-        # comments_list.append({
-        #     "comment_id": comment_id,
-        #     "comment_text": comment_text,
-        #     })
-
+    """
+    This function returns the following: 
+    {
+    'comment_id': ObjectId('some_comment_id'),
+    'comment_text': 'some_comment_text',
+    'answers': [
+        {'answer_text': 'Some_answer',
+        'answer_id': ObjectId('some_answer_id')},
+        {'answer_text': 'Second_some_answer',
+        'answer_id': ObjectId('second_some_answer_id')}
+        ]
+    }
+    """
     return comments_list
 
 
@@ -179,6 +187,11 @@ def delete_comment(request, entry_id, comment_id):
 
     comments_collection = get_comments_collection()
     comments_collection.remove({"_id": ObjectId(comment_id)})
+    comments_collection.remove({
+        "main": False,
+        "entry_id": entry_id,
+        'comment_id': str(comment_id),
+        })
 
     return redirect('social_networks:entry_page', topic_id=topic_id, entry_id=entry_id)
 
@@ -186,10 +199,9 @@ def delete_comment(request, entry_id, comment_id):
 def answer_on_comment(request, entry_id, comment_id):
     entry = Entry.objects.get(id=entry_id)
     topic_id = entry.topic.id
-    print(request.POST)
+
     form = AnswerOnCommentForm(request.POST)
     if form.is_valid():
-        print("valid")
         comment_text = form.cleaned_data['comment']
 
         comment_for_db = {
@@ -201,7 +213,9 @@ def answer_on_comment(request, entry_id, comment_id):
 
         comments_collection = get_comments_collection()
         comments_collection.insert_one(comment_for_db).inserted_id
-    else:
-        print("no_valid")
 
     return redirect('social_networks:entry_page', topic_id=topic_id, entry_id=entry_id)
+
+
+def delete_comment_answer(request, entry_id, comment_id):
+    pass
