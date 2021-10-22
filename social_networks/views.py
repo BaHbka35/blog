@@ -27,10 +27,12 @@ def get_comments(entry_id):
 
     # Recive main comments
     comments_from_db = comments_collection.find({"comment_lvl": 1 ,"entry_id": entry_id,})
+    
     # Will contein structure with main comments with their id and subcomments
     comments_list = []
 
     for comment in comments_from_db:
+        print(comment)
         comment_id = comment["_id"]
         comment_text = comment['comment_text']
         

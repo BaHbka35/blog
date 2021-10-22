@@ -17,3 +17,6 @@
         }
         ]
     }
+
+
+x = collection.find({"answers": {"$elemMatch": {"answers": {"$elemMatch": {"id": ObjectId("61723c5d14458a4d402f4310")}}}}})
