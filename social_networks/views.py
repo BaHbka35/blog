@@ -42,7 +42,11 @@ def get_comments(entry_id):
             answer_list = []
             for answer in answers:
                 answer_text = answer["text"]
-                answer_list.append({"answer_text": answer_text, 'answer_id': ObjectId('6171537158eea764cdbd5b2a')})
+                answer_id = answer["id"]
+                answer_list.append({
+                    "answer_text": answer_text,
+                    'answer_id': ObjectId(answer_id)
+                    })
         except KeyError:
             answer_list = []
 
@@ -200,65 +204,155 @@ def delete_comment(request, entry_id, comment_id):
     return redirect('social_networks:entry_page', topic_id=topic_id, entry_id=entry_id)
 
 
-def answer_on_comment(request, entry_id, comment_id):
+def answer_on_comment_lvl_1(request, entry_id, comment_id):
     entry = Entry.objects.get(id=entry_id)
     topic_id = entry.topic.id
 
     # Form with answer on main comment.
     form = AnswerOnCommentForm(request.POST)
     if form.is_valid():
+
         comment_text = form.cleaned_data['comment']
-
         comments_collection = get_comments_collection()
-
         comment = comments_collection.find_one({"_id": ObjectId(comment_id)})
-
         datetime_now = datetime.now()
 
+        # If comment_lvl_1 has key 'answers'
         try:
             answers = comment['answers']
+            # Inserts document that should be inserted to existing document
             answers = answers + [{
+                "id": ObjectId(),
                 "comment_lvl": 2,
                 "comment_author": "yyy",
                 "text": comment_text,
                 'datetime_now': datetime_now,
                 }]
             comments_collection.update(
-            {"_id": ObjectId(comment_id)},
-            {"$set": {"answers": answers}
-            })
+                {"_id": ObjectId(comment_id)},
+                {"$set": {"answers": answers}
+                })
+
+        # If comment_lvl_1 doesn't have key 'answers'
         except KeyError:
             comments_collection.update(
-            {"_id": ObjectId(comment_id)},
-            {"$set": {"answers": [{
-                "comment_lvl": 2,
-                "comment_author": "yyy",
-                "text": comment_text,
-                'datetime_now': datetime_now,
-            }]}}
+                {"_id": ObjectId(comment_id)},
+                {"$set": {"answers": [{
+                    "id": ObjectId(),
+                    "comment_lvl": 2,
+                    "comment_author": "yyy",
+                    "text": comment_text,
+                    'datetime_now': datetime_now,
+                }]}}
             )
 
     return redirect('social_networks:entry_page', topic_id=topic_id, entry_id=entry_id)
 
 
-def delete_comment_answer(request, entry_id, comment_id):
+def answer_on_comment_lvl_2(request, entry_id, comment_id, comment_answer_id):
+    entry = Entry.objects.get(id=entry_id)
+    topic_id = entry.topic.id
+
+    # Form with answer on main comment.
+    form = AnswerOnCommentForm(request.POST)
+    if form.is_valid():
+
+        comment_text = form.cleaned_data['comment']
+        comments_collection = get_comments_collection()
+
+        entire_document = comments_collection.find_one({"_id": ObjectId(comment_id)})
+
+        datetime_now = datetime.now()
+        
+        answers_high_lvl = entire_document['answers']
+        for answer in answers_high_lvl:
+            if answer["id"] == ObjectId(comment_answer_id):
+                # If comment_lvl_x has key 'answers'
+                try:
+                    answers_lov_lvl = answer["answers"]
+                    # Inserts document that should be inserted to existing document
+                    answers_lov_lvl = answers_lov_lvl + [{
+                        "id": ObjectId(),
+                        "comment_lvl": 3,
+                        "comment_author": "yyy",
+                        "text": comment_text,
+                        'datetime_now': datetime_now,
+                        }]
+
+                    answer['answers'] = answers_lov_lvl
+                    comments_collection.update(
+                        {"_id": ObjectId(comment_id)},
+                        {"$set": {"answers": answers_high_lvl}
+                        })
+                    # If comment_lvl_x doesn't have key 'answers'
+                except KeyError:
+                    answer["answers"] = [{
+                            "id": ObjectId(),
+                            "comment_lvl": 3,
+                            "comment_author": "yyy",
+                            "text": comment_text,
+                            'datetime_now': datetime_now,
+                        }]
+
+                    comments_collection.update(
+                        {"_id": ObjectId(comment_id)},
+                        {"$set": {"answers": answers_high_lvl}}
+                    )
+
+                    # comments_collection.update(
+                    #     {"_id": ObjectId(comment_id)},
+                    #     {"$set": {"answers": [{
+                    #         "id": ObjectId(),
+                    #         "comment_lvl": 3,
+                    #         "comment_author": "yyy",
+                    #         "text": comment_text,
+                    #         'datetime_now': datetime_now,
+                    #     }]}}
+                    # )
+
+
+    return redirect('social_networks:entry_page', topic_id=topic_id, entry_id=entry_id)
+
+
+
+def delete_comment_answer(request, entry_id, comment_id, answer_id):
     
     entry = Entry.objects.get(id=entry_id)
     topic_id = entry.topic.id
 
-    comment_collection = get_comments_collection()
-    # Delete subcomment
-    comment_collection.remove({"_id": ObjectId(comment_id)})
+    comments_collection = get_comments_collection()
+    entire_document = comments_collection.find_one({"_id": ObjectId(comment_id)}) # recive entire document
+
+    answers = entire_document["answers"]
+
+    position = 0
+    for answer in answers:
+        if answer["id"] == ObjectId(answer_id):
+            break
+        else:
+            position += 1
+    # Delete answer from list of answers
+    answers.pop(position)
+
+    # If answers list doesn't have items; delete this key
+    if len(answers) == 0:
+        comments_collection.update({"_id": ObjectId(comment_id)}, {"$unset": {"answers": True}})
+    # If answers list has one or more items; Updates document without deleted answer
+    else:
+        comments_collection.update({"_id": ObjectId(comment_id)}, {"$set": {"answers": answers}})
 
     return redirect('social_networks:entry_page', topic_id=topic_id, entry_id=entry_id)
 
 
 def clear_mongodb(request):
+    # Function delete all documents in monogdb
     collection = get_comments_collection()
     collection.remove()
     return redirect('social_networks:index')
 
 def add_data(request, topic_id, entry_id):
+    # Functuion add some data to the mongodb
+
     comments_collection = get_comments_collection()
     # Get current datetime
     datetime_now = datetime.now()

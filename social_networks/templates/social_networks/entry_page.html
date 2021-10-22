@@ -24,30 +24,57 @@
                 </div>  
                 <div>
                   <ul>
-                    {% for comment in comments %}
+                    {% for comment_lvl_1 in comments %}
                       <li>
                         <div class="main-comment">
-                          <p>{{ comment.comment_text }}</p>
-                          <form action="{% url 'social_networks:delete_comment' entry.id comment.comment_id %}">
+                          <p>{{ comment_lvl_1.comment_text }}</p>
+                          <form action="{% url 'social_networks:delete_comment' entry.id comment_lvl_1.comment_id %}">
                               <button name="submit">delet</button>
                           </form>
                         </div>
+
                         <ol>
-                          {% for answer in comment.answers %}
+                          {% for answer_lvl_1 in comment_lvl_1.answers %}
                             <li>
                               <div class="answer-on-comment">
-                                <p>{{ answer.answer_text }}</p>
-                                <form action="{% url 'social_networks:delete_comment_answer' entry.id answer.answer_id %}" method="post">
+                                <p>{{ answer_lvl_1.answer_text }}</p>
+
+                                <form name="delete_comment_answer" action="{% url 'social_networks:delete_comment_answer' entry.id comment_lvl_1.comment_id answer_lvl_1.answer_id %}" method="post">
                                   {% csrf_token %}
                                   <button name="submit">delete</button>
                                 </form>
                               </div>
+
+                                {# comments #}
+                                {% for answer_lvl_2 in answer_lvl_1.answers %}
+                              <ul>
+                                <li>
+                                  <div>
+                                    <p>{{ answer_lvl_2.answer_text }}</p>
+                                  </div>
+                                </li>
+                                
+                              </ul>
+
+                                {% endfor%}
+
+
+
+                                {# answer #}
+                                <div>
+                                  <form name="answer_comment_form_lvl_2" action="{% url 'social_networks:answer_on_comment_lvl_2' entry.id comment_lvl_1.comment_id answer_lvl_1.answer_id %}" method="POST">
+                                    {% csrf_token %}
+                                    {{ answer_comment_form.as_p }}
+                                    <button name="submit">Answer</button>
+                                  </form>
+                                </div>
+
                             </li>
                           {% endfor %}
                         </ol>
 
                         <div>
-                          <form name="answer_comment_form" action="{% url 'social_networks:answer_on_comment' entry.id comment.comment_id %}" method="POST">
+                          <form name="answer_comment_form" action="{% url 'social_networks:answer_on_comment_lvl_1' entry.id comment_lvl_1.comment_id %}" method="POST">
                             {% csrf_token %}
                             {{ answer_comment_form.as_p }}
                             <button name="submit">Answer</button>
@@ -58,6 +85,7 @@
                   </ul>
                 </div>
 
+                {# Add comment lvl_1 #}
                 <div>
                   <form name="comment_form" action="{% url 'social_networks:entry_page' topic_id entry.id %}" method="POST">
                     {% csrf_token %}
