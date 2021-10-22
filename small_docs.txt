@@ -1,0 +1,39 @@
+social_networks.views
+
+function "delete_comment_answer"
+    recive: 
+        request
+        entry_id - for get topic_id and in the end passed as parameters for redirect
+        comment_id - id of entire document that contain needed comment
+        answer_id - id of the required comment that should be deleted
+
+    1) get comments_collection from mongodb
+    2) get entire document that contain needed comment
+    3) get first_lvl comments when every item is dictionary
+    4) a function call "find_and_delete_answer" that returns edited comments without deleted
+        How works this function:
+            Functon catch list of answers when every item is dictionary.
+            Every item can have itself answers
+
+            Functin recive:
+                answers - list of answers when every item is dictionary
+                answer_id - comment id that should be deleted
+            First of all we rese to zero index. Index needs for delete currect comment
+
+            1) Takes every element of list of answers
+            2) Checks the condision.
+                if "id" of list element equal "id" of neede comment:
+                    delete elemet from list of answers
+                    break
+                else:
+                    Checks the condision.
+                        Does element have itself answers list
+                        If yes:
+                            called the same function "find_and_delete_answer" that gets answers list that belongs current element
+                            break
+                        else:
+                            pass
+            3) Index += 1
+            4) Returns list of answers without deleted comment
+
+    5)      

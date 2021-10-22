@@ -6,8 +6,6 @@ from . import views
 app_name = 'social_networks'
 
 urlpatterns = [
-    # Add data test
-    path('add/data<int:topic_id>/<int:entry_id>', views.add_data, name='add_data'),
     # Clear mongodb
     path('clear/mongodb', views.clear_mongodb, name="clear_mongodb"),
     # Home page.
