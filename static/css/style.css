@@ -1,7 +1,11 @@
-.main-comment{
-    background-color: green;
+.text-comment{
+    margin-bottom: 1px;
 }
 
-.answer-on-comment{
-    background-color: rgb(76, 222, 241);
+.comment_lvl_2{
+    font-size: 16;
+}
+
+.comment_lvl_3{
+    font-size: 12;
 }

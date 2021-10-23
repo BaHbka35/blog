@@ -1,11 +1,9 @@
 {% extends 'social_networks/base.html' %}
 {% load static %}
+
 <!DOCTYPE html>
 <html>
     <head>
-      {% block head %}
-      <link rel="stylesheet" href="{% static 'css/style.css' %}" type="text/css">
-      {% endblock head %}
     </head>
     <body>
         <header>
@@ -13,9 +11,7 @@
         <main>
             {% block content %}
 
-                <a href="{% url 'social_networks:entries' topic_id %}">Назад</a> - 
-                <a href="{% url 'social_networks:edit_entry' entry.id %}">Edit entry</a> - 
-                <a href="{% url 'social_networks:delete_entry' entry.id %}">Delete entry</a>
+                <a href="{% url 'social_networks:entries' topic_id %}">Назад</a>
                 
                 <div>
                   <h2>{{ entry.title }}</h2>
@@ -25,34 +21,37 @@
                   <ul>
                     {% for comment_lvl_1 in comments %}
                       <li>
-                        <div class="main-comment">
-                          <p>{{ comment_lvl_1.comment_text }}</p>
-                          <form action="{% url 'social_networks:delete_comment' entry.id comment_lvl_1.id %}">
-                              <button name="submit">delet</button>
-                          </form>
+                        <div>
+                          <p class="text-comment"><span class="badge rounded-pill bg-primary">{{ comment_lvl_1.comment_text }}</span></p>
+                            <form action="{% url 'social_networks:delete_comment' entry.id comment_lvl_1.id %}">
+                                <button class="btn btn-link btn-sm" name="submit">delet</button>
+                            </form>
                         </div>
 
                         <ol>
                           {% for comment_lvl_2 in comment_lvl_1.answers %}
                             <li>
-                              <div class="answer-on-comment">
-                                <p>{{ comment_lvl_2.comment_text }}</p>
+                              <div>
+                                <p class="text-comment"><span class="badge rounded-pill bg-info text-dark">{{ comment_lvl_2.comment_text }}</span></p>
 
-                                <form name="delete_comment_answer" action="{% url 'social_networks:delete_comment_answer' entry.id comment_lvl_1.id comment_lvl_2.id %}" method="post">
+                                  <form name="delete_comment_answer" action="{% url 'social_networks:delete_comment_answer' entry.id comment_lvl_1.id comment_lvl_2.id %}" method="post">
                                   {% csrf_token %}
-                                  <button name="submit">delete</button>
-                                </form>
+                                  <button class="btn btn-link btn-sm" name="submit">delete</button>
+                                  </form>
                               </div>
 
                                 {# comments #}
                                 {% for comment_lvl_3 in comment_lvl_2.answers %}
                                   <ul>
                                     <li>
-                                        <p>{{ comment_lvl_3.comment_text }}</p>
-                                        <form name="delete_comment_lvl_3" action="{% url 'social_networks:delete_comment_answer' entry.id comment_lvl_1.id comment_lvl_3.id %}" method="post">
-                                          {% csrf_token %}
-                                          <button name="submit">delete</button>
-                                        </form>
+                                      <div>
+                                        <p class="text-comment"><span class="badge rounded-pill bg-warning text-dark">{{ comment_lvl_3.comment_text }}</span></p>
+                                        
+                                          <form name="delete_comment_lvl_3" action="{% url 'social_networks:delete_comment_answer' entry.id comment_lvl_1.id comment_lvl_3.id %}" method="post">
+                                            {% csrf_token %}
+                                            <button class="btn btn-link btn-sm" name="submit">delete</button>
+                                          </form>
+                                      </div>
                                     </li>
                                     
                                   </ul>
@@ -63,7 +62,7 @@
 
                                 {# answer #}
                                 <div>
-                                  <form name="answer_comment_form_lvl_2" action="{% url 'social_networks:answer_on_comment_lvl_2' entry.id comment_lvl_1.id comment_lvl_2.id %}" method="POST">
+                                  <form name="answer_comment_form_lvl_2" action="{% url 'social_networks:answer_on_comment' entry.id comment_lvl_1.id comment_lvl_2.id %}" method="POST">
                                     {% csrf_token %}
                                     {{ answer_comment_form.as_p }}
                                     <button name="submit">Answer</button>
@@ -74,8 +73,8 @@
                           {% endfor %}
                         </ol>
 
-                        <div>
-                          <form name="answer_comment_form" action="{% url 'social_networks:answer_on_comment_lvl_1' entry.id comment_lvl_1.id %}" method="POST">
+                        <div>{# comment_lvl_1#}
+                          <form name="answer_comment_form" action="{% url 'social_networks:answer_on_comment' entry.id comment_lvl_1.id comment_lvl_1.id %}" method="POST">
                             {% csrf_token %}
                             {{ answer_comment_form.as_p }}
                             <button name="submit">Answer</button>
@@ -88,12 +87,15 @@
 
                 {# Add comment lvl_1 #}
                 <div>
-                  <form name="comment_form" action="{% url 'social_networks:entry_page' topic_id entry.id %}" method="POST">
+                  <form name="comment_form" action="{% url 'social_networks:create_comment' topic_id entry.id %}" method="POST">
                     {% csrf_token %}
                     {{ comment_form.as_p }}
                     <button name="submit">Send</button>
                   </form>
                 </div>
+
+                <a href="{% url 'social_networks:edit_entry' entry.id %}">Edit entry</a> - 
+                <a href="{% url 'social_networks:delete_entry' entry.id %}">Delete entry</a>
 
 
             {% endblock content %}

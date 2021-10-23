@@ -59,22 +59,29 @@ def entries(request, topic_id):
 
 
 def entry_page(request, topic_id, entry_id):
-  # Page with specific entry that has abilities for endit entry ...
-  # Page has comments
 
     entry = Entry.objects.get(id=entry_id)
 
-    if request.method == "GET":
-        # Emtpy form for comment
-        comment_form = CommentForm()
-        # Recive comments and their subcomments
-        comments_list = get_comments(entry_id)
-      
-    else:
-      # Form with data that contain a comment.
+    
+    comment_form = CommentForm()
+    comments_list = get_comments(entry_id)
+
+    answer_comment_form = AnswerOnCommentForm()
+    content = {
+        'topic_id': topic_id,
+        'entry': entry,
+        'comment_form': comment_form,
+        'comments': comments_list,
+        'answer_comment_form':answer_comment_form,
+    }
+    return render(request, 'social_networks/entry_page.html', content)
+
+
+def create_comment(request, topic_id, entry_id):
+
+    if request.method == "POST":
         comment_form = CommentForm(request.POST)
         if comment_form.is_valid():
-        
             comments_collection = get_comments_collection()
 
             # Get comment from form
@@ -91,19 +98,9 @@ def entry_page(request, topic_id, entry_id):
             }
             # Writing comment to mongodb
             comments_collection.insert_one(comment_for_db).inserted_id
-            
-            comments_list = get_comments(entry_id)
-            comment_form = CommentForm()
 
-    answer_comment_form = AnswerOnCommentForm()
-    content = {
-        'topic_id': topic_id,
-        'entry': entry,
-        'comment_form': comment_form,
-        'comments': comments_list,
-        'answer_comment_form':answer_comment_form,
-    }
-    return render(request, 'social_networks/entry_page.html', content)
+    return redirect('social_networks:entry_page', topic_id=topic_id, entry_id=entry_id)
+
 
 
 def create_entry(request, topic_id):
@@ -169,84 +166,46 @@ def delete_comment(request, entry_id, comment_id):
     return redirect('social_networks:entry_page', topic_id=topic_id, entry_id=entry_id)
 
 
-def answer_on_comment_lvl_1(request, entry_id, comment_id):
-    entry = Entry.objects.get(id=entry_id)
-    topic_id = entry.topic.id
+def add_answer_on_comment(answers, answer_id, comment_text):
 
-    # Form with answer on main comment.
-    form = AnswerOnCommentForm(request.POST)
-    if form.is_valid():
-
-        comment_text = form.cleaned_data['comment']
-        comments_collection = get_comments_collection()
-        comment = comments_collection.find_one({"_id": ObjectId(comment_id)})
-        datetime_now = datetime.now()
-
-        # If comment_lvl_1 has key 'answers'
-        try:
-            answers = comment['answers']
-            # Inserts document that should be inserted to existing document
-            answers = answers + [{
-                "id": ObjectId(),
-                "comment_author": "yyy",
-                "comment_text": comment_text,
-                'datetime_now': datetime_now,
-                }]
-            comments_collection.update(
-                {"_id": ObjectId(comment_id)},
-                {"$set": {"answers": answers}
-                })
-
-        # If comment_lvl_1 doesn't have key 'answers'
-        except KeyError:
-            comments_collection.update(
-                {"_id": ObjectId(comment_id)},
-                {"$set": {"answers": [{
-                    "id": ObjectId(),
-                    "comment_author": "yyy",
-                    "comment_text": comment_text,
-                    'datetime_now': datetime_now,
-                }]}}
-            )
-
-    return redirect('social_networks:entry_page', topic_id=topic_id, entry_id=entry_id)
-
-
-def add_answer_on_comment(answers, answer_id):
     for answer in answers:
         if answer["id"] == ObjectId(answer_id):
             datetime_now = datetime.now()
+
+            # if answer has answers
             try:
                 answers_low_lvl = answer["answers"]
                 answers_low_lvl += [{
                     "id": ObjectId(),
                     "comment_author": "yyy",
-                    "comment_text": "comment_text",
+                    "comment_text": comment_text,
                     'datetime_now': datetime_now,
                 }]
+                break
+            # if answer doesn't have answers. Create answers list with one answer
             except KeyError:
                 answer["answers"] = [{
                         "id": ObjectId(),
                         "comment_author": "yyy",
-                        "comment_text": "comment_text",
+                        "comment_text": comment_text,
                         'datetime_now': datetime_now,
                     }]
-            break
+                break
         else:
             try:
-                answers_1 = answer["answers"]
-                add_answer_on_comment(answers_1, answer_id)
+                answers_low_lvl = answer["answers"]
+                add_answer_on_comment(answers_low_lvl, answer_id, comment_text)
             except KeyError:
                 pass
     return answers
 
 
-def answer_on_comment_lvl_2(request, entry_id, comment_id, comment_answer_id):
+def answer_on_comment(request, entry_id, comment_id, comment_answer_id):
 
     entry = Entry.objects.get(id=entry_id)
     topic_id = entry.topic.id
 
-    # Form with answer on main comment.
+    # Form with answer
     form = AnswerOnCommentForm(request.POST)
     if form.is_valid():
 
@@ -254,14 +213,42 @@ def answer_on_comment_lvl_2(request, entry_id, comment_id, comment_answer_id):
         comments_collection = get_comments_collection()
 
         entire_document = comments_collection.find_one({"_id": ObjectId(comment_id)})
-        answers = entire_document['answers']
+        datetime_now = datetime.now()
 
-        answers_edited = add_answer_on_comment(answers, comment_answer_id)
+        # if main comment has answers
+        try:
+            answers = entire_document['answers']
+            # If answer for main comment
+            if ObjectId(comment_id) == ObjectId(comment_answer_id):
+                answers_edited = answers + [{
+                    "id": ObjectId(),
+                    "comment_author": "yyy",
+                    "comment_text": comment_text,
+                    'datetime_now': datetime_now,
+                }]
+            # If answer for not main comment
+            else:
+                answers_edited = add_answer_on_comment(answers, comment_answer_id, comment_text)
+            
+            # Update document in mongodb
+            comments_collection.update(
+                {"_id": ObjectId(comment_id)},
+                {"$set": {"answers": answers_edited}}
+                )
 
-        comments_collection.update(
-            {"_id": ObjectId(comment_id)},
-            {"$set": {"answers": answers_edited}}
-            )
+        # If main comment doesn't have answers
+        except KeyError:
+            # If answer for main comment. If not pass
+            if ObjectId(comment_id) == ObjectId(comment_answer_id):
+                comments_collection.update(
+                    {"_id": ObjectId(comment_id)},
+                    {"$set": {"answers": [{
+                        "id": ObjectId(),
+                        "comment_author": "yyy",
+                        "comment_text": comment_text,
+                        'datetime_now': datetime_now,
+                    }]}}
+                )   
   
     return redirect('social_networks:entry_page', topic_id=topic_id, entry_id=entry_id)
 
@@ -274,8 +261,8 @@ def find_and_delete_answer(answers, answer_id):
             break
         else:
             try:
-                answers_1 = answer["answers"]
-                find_and_delete_answer(answers_1, answer_id)
+                answers_low_lvl = answer["answers"]
+                find_and_delete_answer(answers_low_lvl, answer_id)
             except KeyError:
                 pass
         index += 1
