@@ -1,22 +1,15 @@
-1) Коментарий должен содержать все ответы к ниму.
+def xxx(answers):
+    for answer in answers:
+        if id == нужному:
+            какое-то действие с объектом answer
+            break
 
-Для того чтобы различать уровни комменатирия можно добавить поле ("comment_lvl": 1, 2, 3...)
-Каждый комментарий должен хранить в себе время, автора, текст
-структура:
-    {
-    'comment_lvl': 1,
-    'entry_id': entry_id 
-    'comment_author': autor,
-    'comment_text': 'some_comment_text',
-    'comment_time': time,
-    'answers': [
-        {'comment_lvl': 2,
-        'comment_author': autor,
-        'answer_text': 'comment_text',
-        'comment_time': time
-        }
-        ]
-    }
-
+        else:
+            if есть поле answers:
+                answers_1 = answer["answers"]
+                xxx(answers_1)
+            else:
+                пропускаем
+    return answers
 
 x = collection.find({"answers": {"$elemMatch": {"answers": {"$elemMatch": {"id": ObjectId("61723c5d14458a4d402f4310")}}}}})

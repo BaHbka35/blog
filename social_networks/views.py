@@ -26,7 +26,7 @@ def get_comments(entry_id):
     comments_collection = get_comments_collection()
 
     # Recive main comments
-    comments_from_db = comments_collection.find({"comment_lvl": 1 ,"entry_id": entry_id,})
+    comments_from_db = comments_collection.find({"entry_id": entry_id,})
     
     # Will contein structure with main comments with their id and subcomments
     comments_list = []
@@ -84,7 +84,6 @@ def entry_page(request, topic_id, entry_id):
 
             # Comment format for mongodb
             comment_for_db = {
-                "comment_lvl": 1,
                 "entry_id": entry_id,
                 "comment_author": 'xxx',
                 "comment_text": comment_text,
@@ -189,7 +188,6 @@ def answer_on_comment_lvl_1(request, entry_id, comment_id):
             # Inserts document that should be inserted to existing document
             answers = answers + [{
                 "id": ObjectId(),
-                "comment_lvl": 2,
                 "comment_author": "yyy",
                 "comment_text": comment_text,
                 'datetime_now': datetime_now,
@@ -205,7 +203,6 @@ def answer_on_comment_lvl_1(request, entry_id, comment_id):
                 {"_id": ObjectId(comment_id)},
                 {"$set": {"answers": [{
                     "id": ObjectId(),
-                    "comment_lvl": 2,
                     "comment_author": "yyy",
                     "comment_text": comment_text,
                     'datetime_now': datetime_now,
@@ -215,7 +212,37 @@ def answer_on_comment_lvl_1(request, entry_id, comment_id):
     return redirect('social_networks:entry_page', topic_id=topic_id, entry_id=entry_id)
 
 
+def add_answer_on_comment(answers, answer_id):
+    for answer in answers:
+        if answer["id"] == ObjectId(answer_id):
+            datetime_now = datetime.now()
+            try:
+                answers_low_lvl = answer["answers"]
+                answers_low_lvl += [{
+                    "id": ObjectId(),
+                    "comment_author": "yyy",
+                    "comment_text": "comment_text",
+                    'datetime_now': datetime_now,
+                }]
+            except KeyError:
+                answer["answers"] = [{
+                        "id": ObjectId(),
+                        "comment_author": "yyy",
+                        "comment_text": "comment_text",
+                        'datetime_now': datetime_now,
+                    }]
+            break
+        else:
+            try:
+                answers_1 = answer["answers"]
+                add_answer_on_comment(answers_1, answer_id)
+            except KeyError:
+                pass
+    return answers
+
+
 def answer_on_comment_lvl_2(request, entry_id, comment_id, comment_answer_id):
+
     entry = Entry.objects.get(id=entry_id)
     topic_id = entry.topic.id
 
@@ -227,46 +254,16 @@ def answer_on_comment_lvl_2(request, entry_id, comment_id, comment_answer_id):
         comments_collection = get_comments_collection()
 
         entire_document = comments_collection.find_one({"_id": ObjectId(comment_id)})
-        answers_high_lvl = entire_document['answers']
+        answers = entire_document['answers']
 
-        datetime_now = datetime.now()
-        
-        answers_high_lvl = entire_document['answers']
-        for answer in answers_high_lvl:
-            if answer["id"] == ObjectId(comment_answer_id):
-                # If comment_lvl_x has key 'answers'
-                try:
-                    answers_lov_lvl = answer["answers"]
-                    # Inserts document that should be inserted to existing document
-                    answers_lov_lvl = answers_lov_lvl + [{
-                        "id": ObjectId(),
-                        "comment_lvl": 3,
-                        "comment_author": "yyy",
-                        "comment_text": comment_text,
-                        'datetime_now': datetime_now,
-                        }]
+        answers_edited = add_answer_on_comment(answers, comment_answer_id)
 
-                    answer['answers'] = answers_lov_lvl
-                    comments_collection.update(
-                        {"_id": ObjectId(comment_id)},
-                        {"$set": {"answers": answers_high_lvl}
-                        })
-                    # If comment_lvl_x doesn't have key 'answers'
-                except KeyError:
-                    answer["answers"] = [{
-                            "id": ObjectId(),
-                            "comment_lvl": 3,
-                            "comment_author": "yyy",
-                            "comment_text": comment_text,
-                            'datetime_now': datetime_now,
-                        }]
-
-                    comments_collection.update(
-                        {"_id": ObjectId(comment_id)},
-                        {"$set": {"answers": answers_high_lvl}}
-                    )
+        comments_collection.update(
+            {"_id": ObjectId(comment_id)},
+            {"$set": {"answers": answers_edited}}
+            )
+  
     return redirect('social_networks:entry_page', topic_id=topic_id, entry_id=entry_id)
-
 
 
 def find_and_delete_answer(answers, answer_id):
@@ -279,7 +276,6 @@ def find_and_delete_answer(answers, answer_id):
             try:
                 answers_1 = answer["answers"]
                 find_and_delete_answer(answers_1, answer_id)
-                break
             except KeyError:
                 pass
         index += 1
@@ -288,15 +284,14 @@ def find_and_delete_answer(answers, answer_id):
 
 
 def delete_comment_answer(request, entry_id, comment_id, answer_id):
-    # http://127.0.0.1:8000/delete/answer/on/comment/xxx3/xxx6172bc072288b5231cba0fe8/xxx6172bc202288b5231cba0ff4
     
     entry = Entry.objects.get(id=entry_id)
     topic_id = entry.topic.id
 
     comments_collection = get_comments_collection()
     entire_document = comments_collection.find_one({"_id": ObjectId(comment_id)}) # recive entire document
-
     answers = entire_document["answers"]
+
     answers_edited = find_and_delete_answer(answers, answer_id)
 
     comments_collection.update(
@@ -305,9 +300,6 @@ def delete_comment_answer(request, entry_id, comment_id, answer_id):
         )
 
     return redirect('social_networks:entry_page', topic_id=topic_id, entry_id=entry_id)
-
-
-
 
 
 def clear_mongodb(request):
