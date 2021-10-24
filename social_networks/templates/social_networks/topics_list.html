@@ -12,9 +12,9 @@
         <main>
             {% block content %}
             <p>Topics:</p>
-                <ul>
+                <ul class="list-group">
                     {% for topic in topics %}
-                        <li>
+                        <li class="list-group-item list-margin">
                             <a href="{% url 'social_networks:entries' topic.id %}">{{ topic.name }}</a>
                         </li>
                     {% endfor %}

@@ -16,12 +16,12 @@
                     <a href="{% url 'social_networks:create_entry' topic.id %}">Create entry</a>
                 </div>
                 <p>Entries:</p>
-                <ul>
+                <ul class="list-group">
                     {% for entry in entries %}
-                    <li>
-                        <h2>
+                    <li class="list-group-item list-margin entries-list">
+                        <h3>
                             <a href="{% url 'social_networks:entry_page' topic.id entry.id %}">{{ entry.title }}</a>
-                        </h2>
+                        </h3>
                         <p>{{ entry.text }}</p>
                     </li>
                     {% endfor %}

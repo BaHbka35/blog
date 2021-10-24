@@ -2,12 +2,18 @@ from django.shortcuts import render, redirect
 from .models import Topic, Entry
 from .forms import CreateEntryForm, CommentForm, AnswerOnCommentForm
 
+from django.contrib.auth.decorators import login_required
+
 import pymongo
 from .mongodb_data import MONGODB_LINK
 
 from bson.objectid import ObjectId
 
 from datetime import datetime
+
+from django.http import Http404, HttpResponseNotFound
+
+from django.views.generic import TemplateView
 
 
 # Function for get collection with contains comments
@@ -38,11 +44,15 @@ def get_comments(entry_id):
     return comments_list
 
 
-def index(request):
+class IndexView(TemplateView):
 
-    return render(request, 'social_networks/index.html')
+    template_name = "social_networks/index.html"
+# def index(request):
+
+#     return render(request, 'social_networks/index.html')
 
 
+@login_required
 def topics_list(request):
     topics = Topic.objects.all()
 
@@ -50,6 +60,7 @@ def topics_list(request):
     return render(request, 'social_networks/topics_list.html', content)
 
 
+@login_required
 def entries(request, topic_id):
     topic = Topic.objects.get(id=topic_id)
     entries = topic.entry_set.all()
@@ -58,6 +69,7 @@ def entries(request, topic_id):
     return render(request, 'social_networks/entries.html', content)
 
 
+@login_required
 def entry_page(request, topic_id, entry_id):
 
     entry = Entry.objects.get(id=entry_id)
@@ -77,6 +89,7 @@ def entry_page(request, topic_id, entry_id):
     return render(request, 'social_networks/entry_page.html', content)
 
 
+@login_required
 def create_comment(request, topic_id, entry_id):
 
     if request.method == "POST":
@@ -84,15 +97,14 @@ def create_comment(request, topic_id, entry_id):
         if comment_form.is_valid():
             comments_collection = get_comments_collection()
 
-            # Get comment from form
             comment_text = comment_form.cleaned_data['comment']
-            # Get current datetime
+            comment_author = request.user.username
             datetime_now = datetime.now()
 
             # Comment format for mongodb
             comment_for_db = {
                 "entry_id": entry_id,
-                "comment_author": 'xxx',
+                "comment_author": comment_author,
                 "comment_text": comment_text,
                 "comment_time": datetime_now,
             }
@@ -102,7 +114,7 @@ def create_comment(request, topic_id, entry_id):
     return redirect('social_networks:entry_page', topic_id=topic_id, entry_id=entry_id)
 
 
-
+@login_required
 def create_entry(request, topic_id):
     topic = Topic.objects.get(id=topic_id)
 
@@ -113,8 +125,12 @@ def create_entry(request, topic_id):
         # Sent data; Processing data. Form with data of record
         form = CreateEntryForm(request.POST)
         if form.is_valid():
+            
+            user = request.user
+
             data = form.save(commit=False)
             data.topic_id = topic.id
+            data.author = user
             data.save()
             
             return redirect('social_networks:entries', topic.id)
@@ -123,50 +139,67 @@ def create_entry(request, topic_id):
     return render(request, 'social_networks/create_entry.html', content)
 
 
+@login_required
 def edit_entry(request, entry_id):
     entry = Entry.objects.get(id=entry_id)
     topic = entry.topic
+    user_id = request.user.id
     
-    if request.method == 'GET':
-        # Create form with existing entry
-        form = CreateEntryForm(instance=entry)
+    if entry.author == user_id:
+        if request.method == 'GET':
+            # Create form with existing entry
+            form = CreateEntryForm(instance=entry)
 
+        else:
+            # Form with edited data
+            form = CreateEntryForm(instance=entry, data=request.POST)
+            if form.is_valid:
+                form.save()
+                return redirect('social_networks:entry_page', topic.id, entry_id)
     else:
-        # Form with edited data
-        form = CreateEntryForm(instance=entry, data=request.POST)
-        if form.is_valid:
-            form.save()
-            return redirect('social_networks:entry_page', topic.id, entry_id)
+        return HttpResponseNotFound("Вы не можете удалить эту запись")
 
     content = {'form': form, 'entry_id': entry_id}
     return render(request, 'social_networks/edit_entry.html', content)
 
 
+@login_required
 def delete_entry(request, entry_id):
 
     entry = Entry.objects.get(id=entry_id)
     topic = entry.topic
+    user_id = request.user.id
 
-    comments_collection = get_comments_collection()
-    # Delete comments that belong current entry
-    comments_collection.remove({'entry_id': entry_id})
-    entry.delete()
+    if entry.author == user_id:
+        comments_collection = get_comments_collection()
+        # Delete comments that belong current entry
+        comments_collection.remove({'entry_id': entry_id})
+        entry.delete()
 
-    return redirect('social_networks:entries', topic_id=topic.id)
+        return redirect('social_networks:entries', topic_id=topic.id)
+
+    else:
+        return HttpResponseNotFound("Вы не можете удалить эту запись")
 
 
+@login_required
 def delete_comment(request, entry_id, comment_id):
     entry = Entry.objects.get(id=entry_id)
     topic_id = entry.topic.id
 
     comments_collection = get_comments_collection()
-    # Delete comment
-    comments_collection.remove({"_id": ObjectId(comment_id)})
-    
-    return redirect('social_networks:entry_page', topic_id=topic_id, entry_id=entry_id)
+    username = request.user.username
+    comment = comments_collection.find_one({"_id": ObjectId(comment_id), "comment_author": username})
+    if comment:
+        # Delete comment
+        comments_collection.remove({"_id": ObjectId(comment_id)})
+        return redirect('social_networks:entry_page', topic_id=topic_id, entry_id=entry_id)
+
+    else:
+        return HttpResponseNotFound("Вы не можете удалить комментарий")
 
 
-def add_answer_on_comment(answers, answer_id, comment_text):
+def add_answer_on_comment(answers, answer_id, comment_text, comment_author):
 
     for answer in answers:
         if answer["id"] == ObjectId(answer_id):
@@ -177,7 +210,7 @@ def add_answer_on_comment(answers, answer_id, comment_text):
                 answers_low_lvl = answer["answers"]
                 answers_low_lvl += [{
                     "id": ObjectId(),
-                    "comment_author": "yyy",
+                    "comment_author": comment_author,
                     "comment_text": comment_text,
                     'datetime_now': datetime_now,
                 }]
@@ -186,7 +219,7 @@ def add_answer_on_comment(answers, answer_id, comment_text):
             except KeyError:
                 answer["answers"] = [{
                         "id": ObjectId(),
-                        "comment_author": "yyy",
+                        "comment_author": comment_author,
                         "comment_text": comment_text,
                         'datetime_now': datetime_now,
                     }]
@@ -194,12 +227,13 @@ def add_answer_on_comment(answers, answer_id, comment_text):
         else:
             try:
                 answers_low_lvl = answer["answers"]
-                add_answer_on_comment(answers_low_lvl, answer_id, comment_text)
+                add_answer_on_comment(answers_low_lvl, answer_id, comment_text, comment_author)
             except KeyError:
                 pass
     return answers
 
 
+@login_required
 def answer_on_comment(request, entry_id, comment_id, comment_answer_id):
 
     entry = Entry.objects.get(id=entry_id)
@@ -210,6 +244,7 @@ def answer_on_comment(request, entry_id, comment_id, comment_answer_id):
     if form.is_valid():
 
         comment_text = form.cleaned_data['comment']
+        comment_author = request.user.username
         comments_collection = get_comments_collection()
 
         entire_document = comments_collection.find_one({"_id": ObjectId(comment_id)})
@@ -222,13 +257,13 @@ def answer_on_comment(request, entry_id, comment_id, comment_answer_id):
             if ObjectId(comment_id) == ObjectId(comment_answer_id):
                 answers_edited = answers + [{
                     "id": ObjectId(),
-                    "comment_author": "yyy",
+                    "comment_author": comment_author,
                     "comment_text": comment_text,
                     'datetime_now': datetime_now,
                 }]
             # If answer for not main comment
             else:
-                answers_edited = add_answer_on_comment(answers, comment_answer_id, comment_text)
+                answers_edited = add_answer_on_comment(answers, comment_answer_id, comment_text, comment_author)
             
             # Update document in mongodb
             comments_collection.update(
@@ -244,7 +279,7 @@ def answer_on_comment(request, entry_id, comment_id, comment_answer_id):
                     {"_id": ObjectId(comment_id)},
                     {"$set": {"answers": [{
                         "id": ObjectId(),
-                        "comment_author": "yyy",
+                        "comment_author": comment_author,
                         "comment_text": comment_text,
                         'datetime_now': datetime_now,
                     }]}}
@@ -253,16 +288,22 @@ def answer_on_comment(request, entry_id, comment_id, comment_answer_id):
     return redirect('social_networks:entry_page', topic_id=topic_id, entry_id=entry_id)
 
 
-def find_and_delete_answer(answers, answer_id):
+
+def find_and_delete_answer(answers, answer_id, username):
     index = 0
     for answer in answers:
         if answer["id"] == ObjectId(answer_id):
-            answers.pop(index)
-            break
+            if answer["comment_author"] == username:
+                answers.pop(index)
+                break
+
+            else:
+                raise Http404
+
         else:
             try:
                 answers_low_lvl = answer["answers"]
-                find_and_delete_answer(answers_low_lvl, answer_id)
+                find_and_delete_answer(answers_low_lvl, answer_id, username)
             except KeyError:
                 pass
         index += 1
@@ -270,8 +311,8 @@ def find_and_delete_answer(answers, answer_id):
     return answers
 
 
+@login_required
 def delete_comment_answer(request, entry_id, comment_id, answer_id):
-    
     entry = Entry.objects.get(id=entry_id)
     topic_id = entry.topic.id
 
@@ -279,7 +320,9 @@ def delete_comment_answer(request, entry_id, comment_id, answer_id):
     entire_document = comments_collection.find_one({"_id": ObjectId(comment_id)}) # recive entire document
     answers = entire_document["answers"]
 
-    answers_edited = find_and_delete_answer(answers, answer_id)
+    username = request.user.username
+
+    answers_edited = find_and_delete_answer(answers, answer_id, username)
 
     comments_collection.update(
         {"_id": ObjectId(comment_id)},
@@ -289,8 +332,12 @@ def delete_comment_answer(request, entry_id, comment_id, answer_id):
     return redirect('social_networks:entry_page', topic_id=topic_id, entry_id=entry_id)
 
 
+@login_required
 def clear_mongodb(request):
-    # Function delete all documents in monogdb
-    collection = get_comments_collection()
-    collection.remove()
-    return redirect('social_networks:index')
+    if request.user.is_superuser:
+        # Function delete all documents in monogdb
+        collection = get_comments_collection()
+        collection.remove()
+        return redirect('social_networks:index')
+    else:
+        return HttpResponseNotFound("Вы не можете удалять дб")

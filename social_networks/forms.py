@@ -13,7 +13,7 @@ class CreateEntryForm(ModelForm):
         }
 
 class CommentForm(forms.Form):
-  comment = forms.CharField(label="Add comment")
+  comment = forms.CharField(label="Add new comment")
 
 class AnswerOnCommentForm(forms.Form):
   comment = forms.CharField(label="Answer")

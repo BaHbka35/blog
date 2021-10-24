@@ -9,7 +9,7 @@ urlpatterns = [
     # Clear mongodb
     path('clear/mongodb', views.clear_mongodb, name="clear_mongodb"),
     # Home page.
-    path('', views.index, name='index'),
+    path('', views.IndexView.as_view(), name='index'),
     # Page with list of topics.
     path('topics_list', views.topics_list, name='topics_list'),
     # Page with entries which belong specific topic.

@@ -21,12 +21,31 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'social_networks:clear_mongodb' %}" aria-disabled="true">Clear Monogdb</a>
                     </li>
+                    
+                    
+                    {% if user.is_authenticated %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'users:sign_out' %}">Sign out</a>
+                        </li>
+                        <li class="nav-item">
+                            <p class="nav-link disabled">{{ user.username }}</p>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'users:sign_up' %}">Sign up</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'users:sign_in' %}">Sign in</a>
+                        </li>
+                        
+                    {% endif %}
+                
                 </ul>
             </nav>
             {% block header %}{% endblock header %}
         </header>
         <main>
-            <div>
+            <div class="all-contant-margin">
                 {% block content %}{% endblock content %}    
             </div>
         </main>

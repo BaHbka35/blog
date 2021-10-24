@@ -1,11 +1,88 @@
+.all-contant-margin{
+    margin: 10px;
+}
+
+
 .text-comment{
     margin-bottom: 1px;
 }
 
-.comment_lvl_2{
-    font-size: 16;
+.list-margin{
+    margin-top: 15px;
 }
 
+.entries-list h3{
+    font-size: 20px;
+    margin-top: 0px;
+}
+
+
+.entries-list p {
+    font-size: 14px;
+    margin-bottom: 0px;
+}
+
+.comment_lvl_1{
+    font-size: 24px;
+    margin-bottom: 0px;
+}
+
+
+.comment_lvl_2{
+    font-size: 20px;
+    margin-bottom: 0px;
+}
+
+
 .comment_lvl_3{
-    font-size: 12;
+    font-size: 16px;
+    margin-bottom: 0px;
+}
+
+.button-size{
+    font-size: 12px;
+}
+
+.label-size{
+    font-size: 12px;
+}
+
+.delete-button{
+    text-align: right;
+}
+
+.list-style{
+    list-style: none;
+}
+
+.comment_1{
+    margin-left: 0px;
+}
+
+
+.comment_2{
+    margin-left: 20px;
+}
+
+.comment_3{
+    margin-left: 40px;
+}
+
+
+
+.table{
+    width: 100%;
+}
+
+.field-1{
+    width: 60%;
+}
+
+.field-2{
+    width: 10%;
+    text-align: center;
+}
+
+.field-3{
+    text-align: center;
 }
