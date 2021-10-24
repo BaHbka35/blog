@@ -3,6 +3,7 @@ from .models import Topic, Entry
 from .forms import CreateEntryForm, CommentForm, AnswerOnCommentForm
 
 from django.contrib.auth.decorators import login_required
+from django.utils.decorators import method_decorator
 
 import pymongo
 from .mongodb_data import MONGODB_LINK
@@ -13,7 +14,7 @@ from datetime import datetime
 
 from django.http import Http404, HttpResponseNotFound
 
-from django.views.generic import TemplateView
+from django.views.generic import TemplateView, ListView
 
 
 # Function for get collection with contains comments
@@ -47,17 +48,14 @@ def get_comments(entry_id):
 class IndexView(TemplateView):
 
     template_name = "social_networks/index.html"
-# def index(request):
-
-#     return render(request, 'social_networks/index.html')
 
 
-@login_required
-def topics_list(request):
-    topics = Topic.objects.all()
-
-    content = {"topics": topics}
-    return render(request, 'social_networks/topics_list.html', content)
+@method_decorator(login_required, name="dispatch")
+class TopicsListView(ListView):
+    
+    model = Topic
+    template_name = 'social_networks/topics_list.html'
+    context_object_name = "topics"
 
 
 @login_required

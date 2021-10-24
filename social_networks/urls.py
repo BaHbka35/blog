@@ -1,4 +1,5 @@
 # Define URL patterns for social_networks
+from django.contrib.auth.decorators import login_required
 
 from django.urls import path
 from . import views
@@ -11,7 +12,7 @@ urlpatterns = [
     # Home page.
     path('', views.IndexView.as_view(), name='index'),
     # Page with list of topics.
-    path('topics_list', views.topics_list, name='topics_list'),
+    path('topics_list', views.TopicsListView.as_view(), name='topics_list'),
     # Page with entries which belong specific topic.
     path('entries/xxx<int:topic_id>', views.entries, name="entries"),
     # Page of specific entry.
