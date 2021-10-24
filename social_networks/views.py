@@ -71,6 +71,7 @@ def entries(request, topic_id):
 def entry_page(request, topic_id, entry_id):
 
     entry = Entry.objects.get(id=entry_id)
+    author = entry.author
 
     
     comment_form = CommentForm()
@@ -80,6 +81,7 @@ def entry_page(request, topic_id, entry_id):
     content = {
         'topic_id': topic_id,
         'entry': entry,
+        # 'author': author,
         'comment_form': comment_form,
         'comments': comments_list,
         'answer_comment_form':answer_comment_form,

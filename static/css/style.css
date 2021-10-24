@@ -35,7 +35,7 @@
 
 
 .comment_lvl_3{
-    font-size: 16px;
+    font-size: 20px;
     margin-bottom: 0px;
 }
 
@@ -48,7 +48,9 @@
 }
 
 .delete-button{
-    text-align: right;
+    text-align: left;
+    margin: 0px;
+    padding: 0px;
 }
 
 .list-style{
@@ -61,28 +63,18 @@
 
 
 .comment_2{
-    margin-left: 20px;
+    margin-left: 25px;
 }
 
 .comment_3{
-    margin-left: 40px;
+    margin-left: 45px;
 }
 
 
-
-.table{
-    width: 100%;
+.main-div{
+    display: flex;
 }
 
-.field-1{
-    width: 60%;
-}
-
-.field-2{
-    width: 10%;
-    text-align: center;
-}
-
-.field-3{
-    text-align: center;
+.author{
+    margin-left: 30px;
 }
