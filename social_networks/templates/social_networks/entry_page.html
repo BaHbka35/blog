@@ -36,10 +36,17 @@
                               <p>Author: <span>{{ comment_lvl_1.comment_author }}</span><p>
                             </div>
                           </div>
-                          <div>
-                            <form class="delete-button" action="{% url 'social_networks:delete_comment' entry.id comment_lvl_1.id %}">
-                                <button class="btn btn-link btn-sm" name="submit">delete</button>
-                            </form>
+                          <div class="main-div">
+                            <div>
+                              <form class="delete-button" action="{% url 'social_networks:delete_comment' entry.id comment_lvl_1.id %}">
+                                  <button class="btn btn-link btn-sm" name="submit">delete</button>
+                              </form>
+                            </div>
+                            <div>
+                              <form name="create-answer-field" action="#">
+                                <button onclick="changeDisplay('{{ comment_lvl_1.id }}')" class="btn btn-link btn-sm answer-button">answer</button>
+                              </form>
+                            </div>
                           </div>
                         </div>
 
@@ -56,11 +63,19 @@
                                       <p>Author: <span>{{ comment_lvl_2.comment_author }}</span></p>
                                     </div>
                                 </div>
-                                <div class="delete-button">
-                                  <form name="delete_comment_answer" action="{% url 'social_networks:delete_comment_answer' entry.id comment_lvl_1.id comment_lvl_2.id %}" method="post">
-                                    {% csrf_token %}
-                                    <button class="btn btn-link btn-sm" name="submit">delete</button>
-                                  </form>
+                                <div class="main-div">
+                                  <div class="delete-button">
+                                    <form name="delete_comment_answer" action="{% url 'social_networks:delete_comment_answer' entry.id comment_lvl_1.id comment_lvl_2.id %}" method="post">
+                                      {% csrf_token %}
+                                      <button class="btn btn-link btn-sm" name="submit">delete</button>
+                                    </form>
+                                  </div>
+                                  <div>
+                                    <form name="create-answer-field" action="#">
+                                      {% csrf_token %}
+                                      <button class="btn btn-link btn-sm">answer</button>
+                                    </form>
+                                  </div>
                                 </div>
                               </div>
 
@@ -94,7 +109,7 @@
 
 
                                 {# answer #}
-                                <div>
+                                <div class="seen">
                                   <form name="answer_comment_form_lvl_2" action="{% url 'social_networks:answer_on_comment' entry.id comment_lvl_1.id comment_lvl_2.id %}" method="POST">
                                     {% csrf_token %}
                                     {% for field in answer_comment_form %}
@@ -111,7 +126,7 @@
                           {% endfor %}
                         </ul>
 
-                        <div>{# comment_lvl_2#}
+                        <div id="{{ comment_lvl_1.id }}" class="not-seen">{# comment_lvl_2#}
                           <form name="answer_comment_form" action="{% url 'social_networks:answer_on_comment' entry.id comment_lvl_1.id comment_lvl_1.id %}" method="POST">
                             {% csrf_token %}
                             {% for field in answer_comment_form %}
@@ -142,9 +157,10 @@
                   </form>
                 </div>
 
+                {% if is_author %}
                 <a href="{% url 'social_networks:edit_entry' entry.id %}">Edit entry</a> - 
                 <a href="{% url 'social_networks:delete_entry' entry.id %}">Delete entry</a>
-
+                {% endif %}
             {% endblock content %}
         </main>
 

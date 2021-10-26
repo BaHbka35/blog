@@ -78,3 +78,21 @@
 .author{
     margin-left: 30px;
 }
+
+.not-seen{
+    display: none;
+}
+
+.seen{
+    display: block;
+}
+
+.entries-index{
+    margin-left: 600px;
+    margin-right: 600px;
+}
+
+.entries-index li{
+    text-align: center;
+    font-size: 20px;
+}

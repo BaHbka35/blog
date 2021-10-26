@@ -45,9 +45,15 @@ def get_comments(entry_id):
     return comments_list
 
 
-class IndexView(TemplateView):
-
+class IndexView(ListView):
+    model = Entry
     template_name = "social_networks/index.html"
+    context_object_name = "entries"
+
+    def get_context_data(self, **kwargs):
+        entries = Entry.objects.order_by('-id')
+        return {"entries": entries}
+
 
 
 @method_decorator(login_required, name="dispatch")
@@ -72,6 +78,13 @@ def entry_page(request, topic_id, entry_id):
 
     entry = Entry.objects.get(id=entry_id)
     author = entry.author
+    topic = entry.topic
+
+    author = entry.author
+    user = request.user.id
+    is_author = False 
+    if author == user:
+        is_author = True
 
     
     comment_form = CommentForm()
@@ -79,9 +92,9 @@ def entry_page(request, topic_id, entry_id):
 
     answer_comment_form = AnswerOnCommentForm()
     content = {
-        'topic_id': topic_id,
+        'topic_id': topic.id,
         'entry': entry,
-        # 'author': author,
+        'is_author': is_author,
         'comment_form': comment_form,
         'comments': comments_list,
         'answer_comment_form':answer_comment_form,
@@ -145,7 +158,7 @@ def edit_entry(request, entry_id):
     topic = entry.topic
     user_id = request.user.id
     
-    if entry.author == user_id:
+    if entry.author.id == user_id:
         if request.method == 'GET':
             # Create form with existing entry
             form = CreateEntryForm(instance=entry)
@@ -157,6 +170,7 @@ def edit_entry(request, entry_id):
                 form.save()
                 return redirect('social_networks:entry_page', topic.id, entry_id)
     else:
+        print(entry.author, user_id)
         return HttpResponseNotFound("Вы не можете удалить эту запись")
 
     content = {'form': form, 'entry_id': entry_id}
@@ -170,7 +184,7 @@ def delete_entry(request, entry_id):
     topic = entry.topic
     user_id = request.user.id
 
-    if entry.author == user_id:
+    if entry.author.id == user_id:
         comments_collection = get_comments_collection()
         # Delete comments that belong current entry
         comments_collection.remove({'entry_id': entry_id})
