@@ -12,7 +12,7 @@ from bson.objectid import ObjectId
 
 from datetime import datetime
 
-from django.http import Http404, HttpResponseNotFound
+from django.http import Http404, HttpResponseNotFound, JsonResponse
 
 from django.views.generic import TemplateView, ListView
 
@@ -346,8 +346,19 @@ def delete_comment_answer(request, entry_id, comment_id, answer_id):
     return redirect('social_networks:entry_page', topic_id=topic_id, entry_id=entry_id)
 
 
+def test_ajax(request):
+    name = request.POST.get("name")
+    print("Сдесь ajax")
+    print(name)
+    persons = [{"name": "Not Ivan"}, {"name": "Vova"}]
+    content = {"persons": persons}
+    print(content)
+    return JsonResponse(content)
+
+
 @login_required
 def clear_mongodb(request):
+    print(request.user.is_superuser)
     if request.user.is_superuser:
         # Function delete all documents in monogdb
         collection = get_comments_collection()

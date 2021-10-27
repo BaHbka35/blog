@@ -43,10 +43,21 @@
                               </form>
                             </div>
                             <div>
-                              <form name="create-answer-field" action="#">
                                 <button onclick="changeDisplay('{{ comment_lvl_1.id }}')" class="btn btn-link btn-sm answer-button">answer</button>
-                              </form>
                             </div>
+
+                          </div>
+                          <div id="{{ comment_lvl_1.id }}" class="not-seen">{# comment_lvl_2#}
+                            <form name="answer_comment_form" action="{% url 'social_networks:answer_on_comment' entry.id comment_lvl_1.id comment_lvl_1.id %}" method="POST">
+                              {% csrf_token %}
+                              {% for field in answer_comment_form %}
+                                <p>
+                                  <span class="label-size">{{ field.label_tag }}</span><br>
+                                  {{ field }}
+                                </p>
+                              {% endfor %}
+                              <button class="button-size" name="submit">Answer</button>
+                            </form>
                           </div>
                         </div>
 
@@ -71,11 +82,21 @@
                                     </form>
                                   </div>
                                   <div>
-                                    <form name="create-answer-field" action="#">
-                                      {% csrf_token %}
-                                      <button class="btn btn-link btn-sm">answer</button>
-                                    </form>
+                                      <button onclick="changeDisplay('{{ comment_lvl_2.id }}')" class="btn btn-link btn-sm">answer</button>
                                   </div>
+                                </div>
+                                {# answer #}
+                                <div id="{{ comment_lvl_2.id }}" class="not-seen">
+                                  <form name="answer_comment_form_lvl_2" action="{% url 'social_networks:answer_on_comment' entry.id comment_lvl_1.id comment_lvl_2.id %}" method="POST">
+                                    {% csrf_token %}
+                                    {% for field in answer_comment_form %}
+                                      <p>
+                                        <span class="label-size">{{ field.label_tag }}</span><br>
+                                        {{ field }}
+                                      </p>
+                                    {% endfor %}
+                                    <button class="button-size" name="submit">Answer</button>
+                                  </form>
                                 </div>
                               </div>
 
@@ -108,36 +129,13 @@
 
 
 
-                                {# answer #}
-                                <div class="seen">
-                                  <form name="answer_comment_form_lvl_2" action="{% url 'social_networks:answer_on_comment' entry.id comment_lvl_1.id comment_lvl_2.id %}" method="POST">
-                                    {% csrf_token %}
-                                    {% for field in answer_comment_form %}
-                                      <p>
-                                        <span class="label-size">{{ field.label_tag }}</span><br>
-                                        {{ field }}
-                                      </p>
-                                    {% endfor %}
-                                    <button class="button-size" name="submit">Answer</button>
-                                  </form>
-                                </div>
+                                
 
                             </li>
                           {% endfor %}
                         </ul>
 
-                        <div id="{{ comment_lvl_1.id }}" class="not-seen">{# comment_lvl_2#}
-                          <form name="answer_comment_form" action="{% url 'social_networks:answer_on_comment' entry.id comment_lvl_1.id comment_lvl_1.id %}" method="POST">
-                            {% csrf_token %}
-                            {% for field in answer_comment_form %}
-                              <p>
-                                <span class="label-size">{{ field.label_tag }}</span><br>
-                                {{ field }}
-                              </p>
-                            {% endfor %}
-                            <button class="button-size" name="submit">Answer</button>
-                          </form>
-                        </div>
+                        
                       </li>
                     {% endfor %}
                   </ul>
@@ -145,7 +143,7 @@
 
                 {# Add comment lvl_1 #}
                 <div>
-                  <form name="comment_form" action="{% url 'social_networks:create_comment' topic_id entry.id %}" method="POST">
+                  <form id="comment_form_main" name="comment_form" action="{% url 'social_networks:create_comment' topic_id entry.id %}" method="POST">
                     {% csrf_token %}
                     {% for field in comment_form %}
                       <p>
@@ -156,6 +154,24 @@
                     <button class="button-size" name="submit">Send</button>
                   </form>
                 </div>
+
+
+
+                <div>
+                  <form id="comment_form_main_test" name="comment_form_test" method="POST">
+                    <p>Тест</p>
+                    {% csrf_token %}
+                    {% for field in comment_form %}
+                      <p>
+                        <span class="label-size">{{ field.label_tag}}</span><br>
+                        {{ field }}
+                      </p>
+                    {% endfor%}
+                    <button class="button-size" name="submit">Send</button>
+                  </form>
+                </div>
+
+
 
                 {% if is_author %}
                 <a href="{% url 'social_networks:edit_entry' entry.id %}">Edit entry</a> - 

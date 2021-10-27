@@ -53,6 +53,29 @@
             
         </footer>
         <script type="text/javascript" src="{% static 'js/main.js' %}"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
+        
+        <script>
+            $(document).ready(function (){
+                $('#comment_form_main_test').submit(function(){
+                    data = {
+                        "csrfmiddlewaretoken" : "{{csrf_token}}",
+                        "name": "Ivan",
+                    }
+                    $.ajax({
+                        method: "POST",
+                        dataType: 'json',
+                        data: data,
+                        url: "{% url 'social_networks:test_ajax' %}",
+                    })
+                    success: (function (data) {
+                      console.log("frontend")
+                      console.log(data)
+                    })()
+                return false
+                })
+            })
+        </script>
         
     </body>
 </html>

@@ -28,7 +28,12 @@ urlpatterns = [
     # Delete specidic comment.
     path('delete/comment/xxx<int:entry_id>xxx/xxx<str:comment_id>', views.delete_comment, name='delete_comment'),
     # Create answer on comment
-    path('answer/on/comment/xxx<int:entry_id>/xxx<str:comment_id>/xxx<str:comment_answer_id>', views.answer_on_comment, name='answer_on_comment'),
+    path('answer/on/comment/xxx<int:entry_id>/xxx<str:comment_id>/xxx<str:comment_answer_id>',
+        views.answer_on_comment,
+        name='answer_on_comment'),
     # Delete answer on comment.
-    path('delete/answer/on/comment/xxx<int:entry_id>/xxx<str:comment_id>/xxx<str:answer_id>', views.delete_comment_answer, name="delete_comment_answer"),
+    path('delete/answer/on/comment/xxx<int:entry_id>/xxx<str:comment_id>/xxx<str:answer_id>',
+        views.delete_comment_answer,
+        name="delete_comment_answer"),
+    path("alfja", views.test_ajax, name="test_ajax")
 ]
