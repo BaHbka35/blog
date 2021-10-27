@@ -23,9 +23,9 @@
                 </div>  
                 <p>{{ entry.text }}</p>
                 <div>
-                  <ul class="list-group">
+                  <ul class="list-group main-comments">
                     {% for comment_lvl_1 in comments %}
-                      <li class="list-group-item list-style comment_1 list-margin">
+                      <li class="list-group-item comment_1 list-margin">
                         <div>
                           <div class="main-div">
                             <div>
@@ -45,8 +45,8 @@
                             <div>
                                 <button onclick="changeDisplay('{{ comment_lvl_1.id }}')" class="btn btn-link btn-sm answer-button">answer</button>
                             </div>
-
                           </div>
+
                           <div id="{{ comment_lvl_1.id }}" class="not-seen">{# comment_lvl_2#}
                             <form name="answer_comment_form" action="{% url 'social_networks:answer_on_comment' entry.id comment_lvl_1.id comment_lvl_1.id %}" method="POST">
                               {% csrf_token %}
@@ -63,7 +63,7 @@
 
                         <ul class="list-group">
                           {% for comment_lvl_2 in comment_lvl_1.answers %}
-                            <li class="list-group-item list-style comment_2 list-margin">
+                            <li class="list-group-item comment_2 list-margin">
                               <div>
                                 <div class="main-div">
                                     <div class="field-1">
@@ -103,7 +103,7 @@
                                 {# comments #}
                                 {% for comment_lvl_3 in comment_lvl_2.answers %}
                                   <ul class="list-group">
-                                    <li class="list-group-item list-style comment_3 list-margin">
+                                    <li class="list-group-item comment_3 list-margin">
                                       <div>
                                         <div class="main-div">
                                           <tr>
@@ -126,23 +126,18 @@
                                   </ul>
 
                                 {% endfor %}
-
-
-
-                                
-
                             </li>
                           {% endfor %}
                         </ul>
-
-                        
                       </li>
                     {% endfor %}
                   </ul>
                 </div>
 
                 {# Add comment lvl_1 #}
-                <div>
+
+                
+                <div id="div-comment_form_main">
                   <form id="comment_form_main" name="comment_form" action="{% url 'social_networks:create_comment' topic_id entry.id %}" method="POST">
                     {% csrf_token %}
                     {% for field in comment_form %}
@@ -151,15 +146,15 @@
                         {{ field }}
                       </p>
                     {% endfor%}
-                    <button class="button-size" name="submit">Send</button>
+                    <button id="main-button" class="button-size" name="submit">Send</button>
                   </form>
                 </div>
+                
 
 
-
+{% comment %}
                 <div>
-                  <form id="comment_form_main_test" name="comment_form_test" method="POST">
-                    <p>Тест</p>
+                  <form id="comment_form_test" name="comment_form_test">
                     {% csrf_token %}
                     {% for field in comment_form %}
                       <p>
@@ -167,11 +162,10 @@
                         {{ field }}
                       </p>
                     {% endfor%}
-                    <button class="button-size" name="submit">Send</button>
+                    <button id="test-button" class="button-size" name="submit">Send</button>
                   </form>
                 </div>
-
-
+{% endcomment %}
 
                 {% if is_author %}
                 <a href="{% url 'social_networks:edit_entry' entry.id %}">Edit entry</a> - 
@@ -181,7 +175,58 @@
         </main>
 
         <footer>
-            
         </footer>
+
+        {% block scripts %}
+        <script>
+            $("#main-button").on('click', function(){
+
+                $.ajax({
+                    method: "POST",
+                    dataType: "json",
+                    data: $("#comment_form_main").serialize(),
+                    url: '{% url "social_networks:create_comment" topic_id entry.id %}',
+                    success: function(data){
+
+                        console.log(data)
+
+                        let result = data["comment"]
+
+                        let comment_author = result["comment_author"]
+                        let comment_text = result["comment_text"]
+                        let comment_id = result["_id"]["$oid"] // by default {"_id": {"$oid": "abc123"}}
+                        let entry_id = result["entry_id"]
+                        
+                        $(".main-comments").append(
+                        '<li class="list-group-item comment_1 list-margin">'+
+                        '<div>' +
+                          '<div class="main-div">' +
+                            '<div>' +
+                              '<p class="comment_lvl_1"><span class="badge rounded-pill bg-primary">' + comment_text + '</span></p>' +
+                            '</div>' +                            
+                            '<div class="author">' +
+                              '<p>Author: <span>' + comment_author + '</span><p>' +
+                            '</div>' + 
+                          '</div>' +
+                        '</div>'+
+                        '</li>')
+
+
+
+                    }
+
+                })
+                function changeDisplay(idComment){
+                    elem = document.getElementById(idComment)
+                    elem.classList.add("not-seen")
+                }
+                changeDisplay("div-comment_form_main")
+                return false
+            })
+
+            
+        </script>
+        {% endblock scripts %}
+
     </body>
 </html>

@@ -42,7 +42,6 @@
                 
                 </ul>
             </nav>
-            {% block header %}{% endblock header %}
         </header>
         <main>
             <div class="all-contant-margin">
@@ -53,29 +52,9 @@
             
         </footer>
         <script type="text/javascript" src="{% static 'js/main.js' %}"></script>
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
-        
-        <script>
-            $(document).ready(function (){
-                $('#comment_form_main_test').submit(function(){
-                    data = {
-                        "csrfmiddlewaretoken" : "{{csrf_token}}",
-                        "name": "Ivan",
-                    }
-                    $.ajax({
-                        method: "POST",
-                        dataType: 'json',
-                        data: data,
-                        url: "{% url 'social_networks:test_ajax' %}",
-                    })
-                    success: (function (data) {
-                      console.log("frontend")
-                      console.log(data)
-                    })()
-                return false
-                })
-            })
-        </script>
-        
+        <script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
+        {% block scripts %}
+    
+        {% endblock scripts %}
     </body>
 </html>

@@ -4,6 +4,7 @@ from .forms import CreateEntryForm, CommentForm, AnswerOnCommentForm
 
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
 
 import pymongo
 from .mongodb_data import MONGODB_LINK
@@ -15,6 +16,9 @@ from datetime import datetime
 from django.http import Http404, HttpResponseNotFound, JsonResponse
 
 from django.views.generic import TemplateView, ListView
+
+import json
+from bson import json_util
 
 
 # Function for get collection with contains comments
@@ -99,11 +103,17 @@ def entry_page(request, topic_id, entry_id):
         'comments': comments_list,
         'answer_comment_form':answer_comment_form,
     }
+
     return render(request, 'social_networks/entry_page.html', content)
+
+
+def parse_json(data):
+    return json.loads(json_util.dumps(data))
 
 
 @login_required
 def create_comment(request, topic_id, entry_id):
+    print("I'm here")
 
     if request.method == "POST":
         comment_form = CommentForm(request.POST)
@@ -123,6 +133,11 @@ def create_comment(request, topic_id, entry_id):
             }
             # Writing comment to mongodb
             comments_collection.insert_one(comment_for_db).inserted_id
+
+            if request.is_ajax():
+                correct_id = parse_json(comment_for_db["_id"])
+                comment_for_db["_id"] = correct_id
+                return JsonResponse({"comment": comment_for_db})
 
     return redirect('social_networks:entry_page', topic_id=topic_id, entry_id=entry_id)
 
@@ -346,13 +361,25 @@ def delete_comment_answer(request, entry_id, comment_id, answer_id):
     return redirect('social_networks:entry_page', topic_id=topic_id, entry_id=entry_id)
 
 
+@csrf_exempt
 def test_ajax(request):
-    name = request.POST.get("name")
-    print("Сдесь ajax")
-    print(name)
+    print(request.POST)
+    if request.method == "POST":
+        form = CommentForm(request.POST)
+        print()
+        print(form.is_valid())
+        print()
+        print(form.errors)
+        if form.is_valid():
+            print(form.errors)
+            print("я тут")
+            comment = form.cleaned_data["comment"]
+            print(comment)
+    # print("Сдесь ajax")
+    # print(name)
     persons = [{"name": "Not Ivan"}, {"name": "Vova"}]
     content = {"persons": persons}
-    print(content)
+    # print(content)
     return JsonResponse(content)
 
 
