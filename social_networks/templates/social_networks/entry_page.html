@@ -22,14 +22,26 @@
                   </div>
                 </div>
                 <p>{{ entry.text }}</p>
-                <div>
-                  <p id="amount_likes">{{ entry.likes }}</p>
-                  <button id="add_like">like</button>
+                <div class="main-div">
+                  <div>
+                    <p id="amount_likes">{{ amount_likes }}</p>  
+                  </div>
+                  <div>
+                    <button class="gradient-button like-button" id="add_like">like</button>
+                  </div>
+                </div>
+                <div class="main-div">
+                  <div>
+                    <p id="amount_dislikes">{{ amount_dislikes }}</p>  
+                  </div>
+                  <div>
+                    <button class="gradient-button dislike-button" id="add_dislike">dislike</button>
+                  </div>
                 </div>
                 <div>
                   <ul class="list-group main-comments">
                     {% for comment_lvl_1 in comments %}
-                      <li class="list-group-item comment_1 list-margin">
+                      <li class="list-group-item comment_1 list-margin entry-page-lists">
                         <div>
                           <div class="main-div">
                             <div>
@@ -42,12 +54,12 @@
                           </div>
                           <div class="main-div">
                             <div>
-                              <form class="delete-button" action="{% url 'social_networks:delete_comment' entry.id comment_lvl_1.id %}">
+                              <form action="{% url 'social_networks:delete_comment' entry.id comment_lvl_1.id %}">
                                   <button class="btn btn-link btn-sm" name="submit">delete</button>
                               </form>
                             </div>
                             <div>
-                                <button onclick="changeDisplay('{{ comment_lvl_1.id }}')" class="btn btn-link btn-sm answer-button">answer</button>
+                                <button onclick="changeDisplay('{{ comment_lvl_1.id }}')" class="btn btn-link btn-sm">answer</button>
                             </div>
                           </div>
 
@@ -60,14 +72,14 @@
                                   {{ field }}
                                 </p>
                               {% endfor %}
-                              <button class="button-size" name="submit">Answer</button>
+                              <button class="gradient-button answer-send-button" name="submit">Answer</button>
                             </form>
                           </div>
                         </div>
 
                         <ul class="list-group">
                           {% for comment_lvl_2 in comment_lvl_1.answers %}
-                            <li class="list-group-item comment_2 list-margin">
+                            <li class="list-group-item comment_2 list-margin entry-page-lists">
                               <div>
                                 <div class="main-div">
                                     <div class="field-1">
@@ -99,7 +111,7 @@
                                         {{ field }}
                                       </p>
                                     {% endfor %}
-                                    <button class="button-size" name="submit">Answer</button>
+                                    <button class="gradient-button answer-send-button" name="submit">Answer</button>
                                   </form>
                                 </div>
                               </div>
@@ -107,7 +119,7 @@
                                 {# comments #}
                                 {% for comment_lvl_3 in comment_lvl_2.answers %}
                                   <ul class="list-group">
-                                    <li class="list-group-item comment_3 list-margin">
+                                    <li class="list-group-item comment_3 list-margin entry-page-lists">
                                       <div>
                                         <div class="main-div">
                                           <tr>
@@ -145,31 +157,13 @@
                   <form id="comment_form_main" name="comment_form" action="{% url 'social_networks:create_comment' topic_id entry.id %}" method="POST">
                     {% csrf_token %}
                     {% for field in comment_form %}
-                      <p>
-                        <span class="label-size">{{ field.label_tag}}</span><br>
-                        {{ field }}
-                      </p>
+                      <span class="label-size">{{ field.label_tag}}</span><br>
+                      {{ field }}<br>
                     {% endfor%}
-                    <button id="main-button" class="button-size" name="submit">Send</button>
+                    <button id="main-button" class="gradient-button send-button" name="submit">Send</button>
                   </form>
                 </div>
-                
 
-
-{% comment %}
-                <div>
-                  <form id="comment_form_test" name="comment_form_test">
-                    {% csrf_token %}
-                    {% for field in comment_form %}
-                      <p>
-                        <span class="label-size">{{ field.label_tag}}</span><br>
-                        {{ field }}
-                      </p>
-                    {% endfor%}
-                    <button id="test-button" class="button-size" name="submit">Send</button>
-                  </form>
-                </div>
-{% endcomment %}
 
                 {% if is_author %}
                 <a href="{% url 'social_networks:edit_entry' entry.id %}">Edit entry</a> - 
@@ -202,7 +196,7 @@
                         let entry_id = result["entry_id"]
                         
                         $(".main-comments").append(
-                        '<li class="list-group-item comment_1 list-margin">' +
+                        '<li class="list-group-item comment_1 list-margin entry-page-lists">' +
                           '<div class="class-for-add-dynamic-form">' +
                             '<div>' +
                               '<div class="main-div">' +
@@ -243,7 +237,22 @@
                 url: '{% url "social_networks:add_like" entry.id %}',
                 success: function(data){
                   let amount_likes = data["amount_likes"]
+                  let amount_dislikes = data["amount_dislikes"]
                   document.getElementById("amount_likes").innerHTML = amount_likes
+                  document.getElementById("amount_dislikes").innerHTML = amount_dislikes
+                }
+              })
+            })
+
+            $("#add_dislike").on('click', function(){
+              $.ajax({
+                method: "POST",
+                url: '{% url "social_networks:add_dislike" entry.id %}',
+                success: function(data){
+                  let amount_likes = data["amount_likes"]
+                  let amount_dislikes = data["amount_dislikes"]
+                  document.getElementById("amount_likes").innerHTML = amount_likes
+                  document.getElementById("amount_dislikes").innerHTML = amount_dislikes
                 }
               })
             })

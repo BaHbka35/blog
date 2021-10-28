@@ -18,7 +18,7 @@
                 <p>Entries:</p>
                 <ul class="list-group">
                     {% for entry in entries %}
-                    <li class="list-group-item list-margin entries-list">
+                    <li class="list-group-item list-margin entries-list list-item-background">
                         <h3>
                             <a href="{% url 'social_networks:entry_page' topic.id entry.id %}">{{ entry.title }}</a>
                         </h3>

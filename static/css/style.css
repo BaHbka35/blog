@@ -1,3 +1,35 @@
+body {
+  background: #d6eaf8;
+}
+.gradient-button {
+    font-size: 10px;
+    height: 25px;
+    width: 45px;
+    text-decoration: none;
+    display: inline-block;
+    color: white;
+    padding: 20px 30px;
+    margin: 10px 20px;
+    border-radius: 10px;
+    font-family: 'Montserrat', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    background-image: linear-gradient(to right, #9EEFE1 0%, #4830F0 51%, #9EEFE1 100%);
+    background-size: 200% auto;
+    box-shadow: 0 0 20px rgba(0, 0, 0, .1);
+    transition: .5s;
+}
+.gradient-button:hover {
+  background-position: right center;
+}
+
+
+input{
+    background: #d6eaf8;
+}
+
+
+
 .all-contant-margin{
     margin: 10px;
 }
@@ -42,10 +74,13 @@
     font-size: 12px;
 }
 
-.delete-button{
-    text-align: left;
-    margin: 0px;
-    padding: 0px;
+.list-item-background{
+    background: #d6eaf8;
+    border: none;
+}
+
+.entry-page-lists{
+    background: #d6eaf8;
 }
 
 .comment_1{
@@ -80,11 +115,44 @@
 }
 
 .entries-index{
-    margin-left: 600px;
-    margin-right: 600px;
+    margin-left: 500px;
+    margin-right: 500px;
 }
 
 .entries-index li{
     text-align: center;
     font-size: 20px;
+}
+
+.like-button{
+    margin: 0px;
+    margin-left: 10px;
+    padding: 0px;
+}
+
+.dislike-button{
+    margin: 0px;
+    margin-left: 10px;
+    padding: 0px;
+    width: 75px;
+}
+
+.send-button{
+    margin: 0px;
+    margin-top: 5px;
+    padding: 0px;
+}
+
+
+.delete-button{
+    width: 65px;
+    margin: 0px;
+    padding: 0px;
+}
+
+.answer-button{
+    width: 65px;
+    margin: 0px;
+    padding: 0px;
+    margin-left: 10px;
 }

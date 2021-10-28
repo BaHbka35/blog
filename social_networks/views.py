@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from .models import Topic, Entry, Like
+from .models import Topic, Entry, Like, DisLike
 from .forms import CreateEntryForm, CommentForm, AnswerOnCommentForm
 
 from django.contrib.auth.decorators import login_required
@@ -86,7 +86,8 @@ def entry_page(request, topic_id, entry_id):
 
     author = entry.author
     user = request.user.id
-    likes = entry.likes
+    amount_likes = Like.objects.filter(entry=entry_id).count()
+    amount_dislikes = DisLike.objects.filter(entry=entry_id).count()
     is_author = False 
     if author == user:
         is_author = True
@@ -98,7 +99,8 @@ def entry_page(request, topic_id, entry_id):
     answer_comment_form = AnswerOnCommentForm()
     content = {
         'topic_id': topic.id,
-        'likes': likes,
+        'amount_likes': amount_likes,
+        'amount_dislikes': amount_dislikes,
         'entry': entry,
         'is_author': is_author,
         'comment_form': comment_form,
@@ -365,42 +367,90 @@ def delete_comment_answer(request, entry_id, comment_id, answer_id):
 
 
 @csrf_exempt
+@login_required
 def add_like(request, entry_id):
   if request.method == "POST":
     entry = Entry.objects.get(id=entry_id)
     user = request.user
     user_id = user.id
-    amount_likes = entry.likes
+
+    
     
     is_like = []
     try:
-      print("Я тут")
-      is_like = Like.objects.get(entry_id=entry_id, user_id=user_id)
+        is_like = Like.objects.get(entry=entry_id, user=user_id)
       
     except:
-      if is_like:
-        pass
-      else:
-        
-        amount_likes += 1
-        entry.likes = amount_likes
-        print(amount_likes)
-        
-        entry.save()
-        like = Like.objects.create(entry_id=entry, user_id=user)
+        if is_like:
+            pass
+        else:
+            is_dislike = []
+            try:
+                is_dislike = DisLike.objects.get(entry=entry_id, user=user_id)
+            except:
+                pass
+
+            if is_dislike:
+                is_dislike.delete()
+
+        like = Like.objects.create(entry=entry, user=user)
         like.save()
+
+    amount_likes = Like.objects.filter(entry=entry_id).count()
+    amount_dislikes = DisLike.objects.filter(entry=entry_id).count()
 
     content = {
       'amount_likes': amount_likes,
+      'amount_dislikes': amount_dislikes,
     }
 
-  return JsonResponse(content)
+    return JsonResponse(content)
+
+
+@csrf_exempt
+@login_required
+def add_dislike(request, entry_id):
+    if request.method == "POST":
+        entry = Entry.objects.get(id=entry_id)
+        user = request.user
+        user_id = user.id
+
+
+        is_dislike = []
+        try:
+          is_dislike = DisLike.objects.get(entry=entry_id, user=user_id)
+
+        except:
+            if is_dislike:
+                pass
+            else:
+                is_like = []
+                try:
+                    is_like = Like.objects.get(entry=entry_id, user=user_id)
+                except:
+                    pass
+
+                if is_like:
+                    is_like.delete()
+
+                dislike = DisLike.objects.create(entry=entry, user=user)
+                dislike.save()
+
+    amount_likes = Like.objects.filter(entry=entry_id).count()
+    amount_dislikes = DisLike.objects.filter(entry=entry_id).count()
+
+    content = {
+    'amount_likes': amount_likes,
+    'amount_dislikes': amount_dislikes,
+    }
+
+    return JsonResponse(content)
+
+
 
 @login_required
 def clear_mongodb(request):
-    print(request.user.is_superuser)
     if request.user.is_superuser:
-        # Function delete all documents in monogdb
         collection = get_comments_collection()
         collection.remove()
         return redirect('social_networks:index')

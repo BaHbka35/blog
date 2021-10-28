@@ -19,7 +19,6 @@ class Entry(models.Model):
     title = models.CharField(max_length=200)
     text = models.TextField()
     author = models.ForeignKey(User, on_delete=models.CASCADE, default=None)
-    likes = models.IntegerField()
 
     def __str__(self):
         if len(self.title) > 20:
@@ -30,8 +29,17 @@ class Entry(models.Model):
 
 class Like(models.Model):
 
-  entry_id = models.ForeignKey(Entry, on_delete=models.CASCADE)
-  user_id = models.ForeignKey(User, on_delete=models.CASCADE)
+  entry = models.ForeignKey(Entry, on_delete=models.CASCADE)
+  user = models.ForeignKey(User, on_delete=models.CASCADE)
+
+  def __str__(self):
+    return f"user:{self.user_id} entry:{self.entry_id}"
+
+
+class DisLike(models.Model):
+
+  entry = models.ForeignKey(Entry, on_delete=models.CASCADE)
+  user = models.ForeignKey(User, on_delete=models.CASCADE)
 
   def __str__(self):
     return f"user:{self.user_id} entry:{self.entry_id}"

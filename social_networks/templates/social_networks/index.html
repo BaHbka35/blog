@@ -12,13 +12,13 @@
         <main>
             {% block content %}
                 <div class="entries-index">
-                <ul class="list-group">
-                    {% for entry in entries %}
-                        <li class="list-group-item list-margin">
-                            <a href="{% url 'social_networks:entry_page' entry.topic.id entry.id %}">{{ entry.title }}</a>
-                        </li>
-                    {% endfor %}    
-                </ul>
+                    <ul class="list-group">
+                        {% for entry in entries %}
+                            <li class="list-group-item list-margin list-item-background">
+                                <a href="{% url 'social_networks:entry_page' entry.topic.id entry.id %}">{{ entry.title }}</a>
+                            </li>
+                        {% endfor %}    
+                    </ul>
                 </div>
 
             {% endblock content %}
