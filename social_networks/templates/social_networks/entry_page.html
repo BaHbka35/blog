@@ -20,8 +20,12 @@
                   <div class="author">
                     <p>Author: <span>{{ entry.author }}</span></p>
                   </div>
-                </div>  
+                </div>
                 <p>{{ entry.text }}</p>
+                <div>
+                  <p id="amount_likes">{{ entry.likes }}</p>
+                  <button id="add_like">like</button>
+                </div>
                 <div>
                   <ul class="list-group main-comments">
                     {% for comment_lvl_1 in comments %}
@@ -230,6 +234,18 @@
                 })
                 $("#id_comment").val("")
                 return false
+            })
+
+
+            $("#add_like").on('click', function(){
+              $.ajax({
+                method: "POST",
+                url: '{% url "social_networks:add_like" entry.id %}',
+                success: function(data){
+                  let amount_likes = data["amount_likes"]
+                  document.getElementById("amount_likes").innerHTML = amount_likes
+                }
+              })
             })
 
             

@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from .models import Topic, Entry
+from .models import Topic, Entry, Like
 from .forms import CreateEntryForm, CommentForm, AnswerOnCommentForm
 
 from django.contrib.auth.decorators import login_required
@@ -86,6 +86,7 @@ def entry_page(request, topic_id, entry_id):
 
     author = entry.author
     user = request.user.id
+    likes = entry.likes
     is_author = False 
     if author == user:
         is_author = True
@@ -97,6 +98,7 @@ def entry_page(request, topic_id, entry_id):
     answer_comment_form = AnswerOnCommentForm()
     content = {
         'topic_id': topic.id,
+        'likes': likes,
         'entry': entry,
         'is_author': is_author,
         'comment_form': comment_form,
@@ -159,6 +161,7 @@ def create_entry(request, topic_id):
             data = form.save(commit=False)
             data.topic_id = topic.id
             data.author = user
+            data.likes = 0
             data.save()
             
             return redirect('social_networks:entries', topic.id)
@@ -362,26 +365,36 @@ def delete_comment_answer(request, entry_id, comment_id, answer_id):
 
 
 @csrf_exempt
-def test_ajax(request):
-    print(request.POST)
-    if request.method == "POST":
-        form = CommentForm(request.POST)
-        print()
-        print(form.is_valid())
-        print()
-        print(form.errors)
-        if form.is_valid():
-            print(form.errors)
-            print("я тут")
-            comment = form.cleaned_data["comment"]
-            print(comment)
-    # print("Сдесь ajax")
-    # print(name)
-    persons = [{"name": "Not Ivan"}, {"name": "Vova"}]
-    content = {"persons": persons}
-    # print(content)
-    return JsonResponse(content)
+def add_like(request, entry_id):
+  if request.method == "POST":
+    entry = Entry.objects.get(id=entry_id)
+    user = request.user
+    user_id = user.id
+    amount_likes = entry.likes
+    
+    is_like = []
+    try:
+      print("Я тут")
+      is_like = Like.objects.get(entry_id=entry_id, user_id=user_id)
+      
+    except:
+      if is_like:
+        pass
+      else:
+        
+        amount_likes += 1
+        entry.likes = amount_likes
+        print(amount_likes)
+        
+        entry.save()
+        like = Like.objects.create(entry_id=entry, user_id=user)
+        like.save()
 
+    content = {
+      'amount_likes': amount_likes,
+    }
+
+  return JsonResponse(content)
 
 @login_required
 def clear_mongodb(request):

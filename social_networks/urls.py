@@ -35,5 +35,5 @@ urlpatterns = [
     path('delete/answer/on/comment/xxx<int:entry_id>/xxx<str:comment_id>/xxx<str:answer_id>',
         views.delete_comment_answer,
         name="delete_comment_answer"),
-    path("alfja", views.test_ajax, name="test_ajax")
+    path('add_like/xxx<int:entry_id>/', views.add_like, name="add_like"),
 ]
