@@ -180,7 +180,7 @@
         {% block scripts %}
         <script>
             $("#main-button").on('click', function(){
-
+                
                 $.ajax({
                     method: "POST",
                     dataType: "json",
@@ -198,17 +198,29 @@
                         let entry_id = result["entry_id"]
                         
                         $(".main-comments").append(
-                        '<li class="list-group-item comment_1 list-margin">'+
-                        '<div>' +
-                          '<div class="main-div">' +
+                        '<li class="list-group-item comment_1 list-margin">' +
+                          '<div class="class-for-add-dynamic-form">' +
                             '<div>' +
-                              '<p class="comment_lvl_1"><span class="badge rounded-pill bg-primary">' + comment_text + '</span></p>' +
-                            '</div>' +                            
-                            '<div class="author">' +
-                              '<p>Author: <span>' + comment_author + '</span><p>' +
-                            '</div>' + 
+                              '<div class="main-div">' +
+                                '<div>' +
+                                  '<p class="comment_lvl_1"><span class="badge rounded-pill bg-primary">' + comment_text + '</span></p>' +
+                                '</div>' +                            
+                                '<div class="author">' +
+                                  '<p>Author: <span>' + comment_author + '</span><p>' +
+                                '</div>' + 
+                              '</div>' +
+                            '</div>'+
+                            '<div class="main-div">'+
+                              '<div>' +
+                                '<form class="delete-button" action="' + '/delete/comment/xxx' + entry_id + 'xxx/xxx' + comment_id + '">' +
+                                    '<button class="btn btn-link btn-sm" name="submit">delete</button>' +
+                                '</form>' +
+                              '</div>' +
+                              '<div>' +
+                                  '<button onclick="changeDisplay('+ comment_id + ')" class="btn btn-link btn-sm answer-button">answer</button>' +
+                              '</div>' +
+                            '</div>'+
                           '</div>' +
-                        '</div>'+
                         '</li>')
 
 
@@ -216,11 +228,7 @@
                     }
 
                 })
-                function changeDisplay(idComment){
-                    elem = document.getElementById(idComment)
-                    elem.classList.add("not-seen")
-                }
-                changeDisplay("div-comment_form_main")
+                $("#id_comment").val("")
                 return false
             })
 

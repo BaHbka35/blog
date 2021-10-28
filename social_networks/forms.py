@@ -13,7 +13,8 @@ class CreateEntryForm(ModelForm):
         }
 
 class CommentForm(forms.Form):
-  comment = forms.CharField(label="Add new comment")
+  comment = forms.CharField(label="Add new comment", widget=forms.TextInput(attrs={'value': " "}))
+  
 
 class AnswerOnCommentForm(forms.Form):
   comment = forms.CharField(label="Answer")
