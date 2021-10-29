@@ -120,23 +120,22 @@
                                 {% for comment_lvl_3 in comment_lvl_2.answers %}
                                   <ul class="list-group">
                                     <li class="list-group-item comment_3 list-margin entry-page-lists">
-                                      <div>
-                                        <div class="main-div">
-                                          <tr>
-                                            <div class="field-1">
-                                              <p class="comment_lvl_3"><span class="badge rounded-pill bg-warning text-dark">{{ comment_lvl_3.comment_text }}</span></p>
+                                        <div>
+                                            <div class="main-div">
+                                                <div class="field-1">
+                                                <p class="comment_lvl_3"><span class="badge rounded-pill bg-warning text-dark">{{ comment_lvl_3.comment_text }}</span></p>
+                                                </div>
+                                                <div class="author">
+                                                <p>Author: <span>{{ comment_lvl_3.comment_author }}</span></p>
+                                                </div>
                                             </div>
-                                            <div class="author">
-                                              <p>Author: <span>{{ comment_lvl_3.comment_author }}</span></p>
+                                            <div class="delete-button">
+                                            <form name="delete_comment_lvl_3" action="{% url 'social_networks:delete_comment_answer' entry.id comment_lvl_1.id comment_lvl_3.id %}" method="post">
+                                                {% csrf_token %}
+                                                <button class="btn btn-link btn-sm" name="submit">delete</button>
+                                            </form>
                                             </div>
                                         </div>
-                                        <div class="delete-button">
-                                          <form name="delete_comment_lvl_3" action="{% url 'social_networks:delete_comment_answer' entry.id comment_lvl_1.id comment_lvl_3.id %}" method="post">
-                                            {% csrf_token %}
-                                            <button class="btn btn-link btn-sm" name="submit">delete</button>
-                                          </form>
-                                        </div>
-                                      </div>
                                     </li>
                                     
                                   </ul>
@@ -158,16 +157,17 @@
                     {% csrf_token %}
                     {% for field in comment_form %}
                       <span class="label-size">{{ field.label_tag}}</span><br>
-                      {{ field }}<br>
+                      {{ field }}
+                      <br>
                     {% endfor%}
                     <button id="main-button" class="gradient-button send-button" name="submit">Send</button>
                   </form>
                 </div>
 
-
-                {% if is_author %}
                 <a href="{% url 'social_networks:edit_entry' entry.id %}">Edit entry</a> - 
                 <a href="{% url 'social_networks:delete_entry' entry.id %}">Delete entry</a>
+                {% if is_author %}
+                    
                 {% endif %}
             {% endblock content %}
         </main>
@@ -220,13 +220,10 @@
                             '</div>'+
                           '</div>' +
                         '</li>')
-
-
-
                     }
 
                 })
-                $("#id_comment").val("")
+                $("#main_form_comment").val("")
                 return false
             })
 
