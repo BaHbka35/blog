@@ -12,11 +12,11 @@ from bson import json_util
 
 
 
-def parse_json(data):
+def _parse_json(data):
     return json.loads(json_util.dumps(data))
 
 
-def create_comment_service(request, entry_id):
+def create_comment_comment_for_specific_entry(request, entry_id):
     
     entry = Entry.objects.get(id=entry_id)
     topic_id = entry.topic_id
@@ -41,14 +41,14 @@ def create_comment_service(request, entry_id):
             comments_collection.insert_one(comment_for_db).inserted_id
 
             if request.is_ajax():
-                correct_id = parse_json(comment_for_db["_id"])
+                correct_id = _parse_json(comment_for_db["_id"])
                 comment_for_db["_id"] = correct_id
                 return JsonResponse({"comment": comment_for_db})
 
     return redirect('social_networks:entry_page', topic_id=topic_id, entry_id=entry_id)
 
 
-def delete_comment_service(request, entry_id, comment_id):
+def delete_main_comment_and_its_subcomment(request, entry_id, comment_id):
     entry = Entry.objects.get(id=entry_id)
     topic_id = entry.topic.id
 
@@ -64,7 +64,7 @@ def delete_comment_service(request, entry_id, comment_id):
         return HttpResponseNotFound("Вы не можете удалить комментарий")
 
 
-def finds_specific_comment_and_add_answer(answers, answer_id, comment_text, comment_author):
+def _finds_specific_comment_and_add_answer(answers, answer_id, comment_text, comment_author):
 
     for answer in answers:
         if answer["id"] == ObjectId(answer_id):
@@ -92,14 +92,17 @@ def finds_specific_comment_and_add_answer(answers, answer_id, comment_text, comm
         else:
             try:
                 answers_low_lvl = answer["answers"]
-                add_answer_on_comment(answers_low_lvl, answer_id, comment_text, comment_author)
+                _finds_specific_comment_and_add_answer(answers_low_lvl, answer_id, comment_text, comment_author)
             except KeyError:
                 pass
     return answers
 
 
 
-def add_answer_on_comment(request, comment_id, comment_answer_id):
+def add_subcomment_for_specific_comment(request, entry_id, comment_id, comment_answer_id):
+
+    entry = Entry.objects.get(id=entry_id)
+    topic_id = entry.topic.id
 
     # Form with answer
     form = AnswerOnCommentForm(request.POST)
@@ -125,7 +128,7 @@ def add_answer_on_comment(request, comment_id, comment_answer_id):
                 }]
             # If answer for not main comment
             else:
-                answers_edited = finds_specific_comment_and_add_answer(
+                answers_edited = _finds_specific_comment_and_add_answer(
                     answers,
                     comment_answer_id,
                     comment_text,
@@ -151,9 +154,10 @@ def add_answer_on_comment(request, comment_id, comment_answer_id):
                     }]}}
                 )
 
+    return redirect('social_networks:entry_page', topic_id=topic_id, entry_id=entry_id)
 
 
-def find_and_delete_comment_answer(answers, answer_id, username):
+def _find_and_delete_comment_answer(answers, answer_id, username):
     index = 0
     for answer in answers:
         if answer["id"] == ObjectId(answer_id):
@@ -167,7 +171,7 @@ def find_and_delete_comment_answer(answers, answer_id, username):
         else:
             try:
                 answers_low_lvl = answer["answers"]
-                find_and_delete_comment_answer(answers_low_lvl, answer_id, username)
+                _find_and_delete_comment_answer(answers_low_lvl, answer_id, username)
             except KeyError:
                 pass
         index += 1
@@ -176,7 +180,9 @@ def find_and_delete_comment_answer(answers, answer_id, username):
 
 
 
-def delete_comment_answer_service(request, comment_id, answer_id):
+def delete_subcomment_and_its_subcomments(request, entry_id, comment_id, answer_id):
+    entry = Entry.objects.get(id=entry_id)
+    topic_id = entry.topic.id
 
     comments_collection = get_comments_collection()
     entire_document = comments_collection.find_one({"_id": ObjectId(comment_id)}) # recive entire document
@@ -184,9 +190,11 @@ def delete_comment_answer_service(request, comment_id, answer_id):
 
     username = request.user.username
 
-    answers_edited = find_and_delete_comment_answer(answers, answer_id, username)
+    answers_edited = _find_and_delete_comment_answer(answers, answer_id, username)
 
     comments_collection.update(
         {"_id": ObjectId(comment_id)},
         {"$set": {"answers": answers_edited}}
         )
+
+    return redirect('social_networks:entry_page', topic_id=topic_id, entry_id=entry_id)

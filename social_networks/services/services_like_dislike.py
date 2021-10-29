@@ -1,7 +1,7 @@
 from social_networks.models import Entry, Like, DisLike
 
 
-def add_like_service(request, entry_id):
+def add_like_for_specific_entry(request, entry_id):
     entry = Entry.objects.get(id=entry_id)
     user = request.user
     user_id = user.id
@@ -27,7 +27,7 @@ def add_like_service(request, entry_id):
             like.save()
 
 
-def add_dislike_service(request, entry_id):
+def add_dislike_for_specific_entry(request, entry_id):
 
     entry = Entry.objects.get(id=entry_id)
     user = request.user
@@ -52,3 +52,16 @@ def add_dislike_service(request, entry_id):
 
             dislike = DisLike.objects.create(entry=entry, user=user)
             dislike.save()
+
+
+def get_amount_likes_and_dislikes(entry_id):
+
+    amount_likes = Like.objects.filter(entry=entry_id).count()
+    amount_dislikes = DisLike.objects.filter(entry=entry_id).count()
+
+    amount_likes_and_dislikes = {
+    'amount_likes': amount_likes,
+    'amount_dislikes': amount_dislikes,
+    }
+
+    return amount_likes_and_dislikes

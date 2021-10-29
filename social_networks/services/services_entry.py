@@ -7,7 +7,7 @@ from .services_mongodb import get_comments
 
 from .services_mongodb import get_comments_collection
 
-def edit_entry_service(request, entry_id):
+def edit_entry_and_save(request, entry_id):
     entry = Entry.objects.get(id=entry_id)
     topic = entry.topic
     user_id = request.user.id
@@ -29,7 +29,7 @@ def edit_entry_service(request, entry_id):
     return render(request, 'social_networks/edit_entry.html', content)
 
 
-def get_content_for_entry_page(request, topic_id, entry_id):
+def render_page_with_specific_entry(request, topic_id, entry_id):
 
     entry = Entry.objects.get(id=entry_id)
     author = entry.author
@@ -59,10 +59,10 @@ def get_content_for_entry_page(request, topic_id, entry_id):
         'answer_comment_form':answer_comment_form,
     }
 
-    return content
+    return render(request, 'social_networks/entry_page.html', content)
 
 
-def create_entry_service(request, topic_id):
+def create_entry_and_save(request, topic_id):
     
     topic = Topic.objects.get(id=topic_id)
 
@@ -88,7 +88,7 @@ def create_entry_service(request, topic_id):
     return render(request, 'social_networks/create_entry.html', content)
 
 
-def delete_entry_service(request, entry_id):
+def delete_entry_and_its_comments(request, entry_id):
     entry = Entry.objects.get(id=entry_id)
     topic = entry.topic
     user_id = request.user.id

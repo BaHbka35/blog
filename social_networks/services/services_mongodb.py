@@ -1,3 +1,5 @@
+from django.shortcuts import redirect
+
 from .mongodb_data import MONGODB_LINK
 import pymongo
 
@@ -28,3 +30,10 @@ def get_comments(entry_id):
         comments_list.append(comment)
 
     return comments_list
+
+
+def delete_comments_from_mongodb():
+
+    collection = get_comments_collection()
+    collection.remove()
+    return redirect('social_networks:index')

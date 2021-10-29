@@ -1,3 +1,4 @@
 env/
+.idea
 social_networks/mongodb_data.py
 my_tests_file/

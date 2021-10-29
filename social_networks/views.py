@@ -1,159 +1,135 @@
 from django.shortcuts import render, redirect
-from .models import Topic, Entry, Like, DisLike
-from .forms import CreateEntryForm, CommentForm, AnswerOnCommentForm
 
 from django.contrib.auth.decorators import login_required
-from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 
-import pymongo
+from django.http import HttpResponseNotFound, JsonResponse
+
+from .services.services import render_page_with_topics_list, \
+    render_page_with_entries_for_current_topic
+
+from .services.services_comments import create_comment_comment_for_specific_entry, \
+    delete_main_comment_and_its_subcomment,\
+    add_subcomment_for_specific_comment, \
+    delete_subcomment_and_its_subcomments
+
+from .services.services_entry import render_page_with_specific_entry, \
+    edit_entry_and_save, create_entry_and_save, delete_entry_and_its_comments
+
+from .services.services_like_dislike import add_like_for_specific_entry, \
+    add_dislike_for_specific_entry, get_amount_likes_and_dislikes
+
+from .services.services_mongodb import delete_comments_from_mongodb
 
 
-from bson.objectid import ObjectId
+def index(request):
+    """ Renders index page."""
 
-from datetime import datetime
-
-from django.http import Http404, HttpResponseNotFound, JsonResponse
-
-from django.views.generic import TemplateView, ListView
-
-import json
-from bson import json_util
-
-
-from .services.services_mongodb import get_comments_collection, get_comments
-from .services.services_comments import create_comment_service,  add_answer_on_comment, delete_comment_answer_service, delete_comment_service
-
-from .services.services_like_dislike import add_like_service, add_dislike_service
-from .services.services_entry import edit_entry_service, get_content_for_entry_page, create_entry_service, delete_entry_service
-
-
-class IndexView(ListView):
-    model = Entry
-    template_name = "social_networks/index.html"
-    context_object_name = "entries"
-
-    def get_context_data(self, **kwargs):
-        entries = Entry.objects.order_by('-id')
-        return {"entries": entries}
-
-
-
-@method_decorator(login_required, name="dispatch")
-class TopicsListView(ListView):
-    
-    model = Topic
-    template_name = 'social_networks/topics_list.html'
-    context_object_name = "topics"
+    return render(request, 'social_networks/index.html')
 
 
 @login_required
-def entries(request, topic_id):
-    topic = Topic.objects.get(id=topic_id)
-    entries = topic.entry_set.all()
+def topics_list(request):
+    """ Renders page with list of all topics."""
+    
+    return render_page_with_topics_list(request)
 
-    content = {'topic': topic, 'entries': entries}
-    return render(request, 'social_networks/entries.html', content)
+
+@login_required
+def entries_list(request, topic_id):
+    """ Renders page with all entries witch belongs to specific topic."""
+
+    return render_page_with_entries_for_current_topic(request, topic_id)
 
 
 @login_required
 def entry_page(request, topic_id, entry_id):
+    """ Render page with specific entry."""
 
-    content = get_content_for_entry_page(request, topic_id, entry_id)
-    return render(request, 'social_networks/entry_page.html', content)
+    return render_page_with_specific_entry(request, topic_id, entry_id)
 
 
 @login_required
 def create_comment(request, topic_id, entry_id):
+    """ Create comment for specific entry and writes them to mongodb"""
 
-    return create_comment_service(request, entry_id)
+    return create_comment_comment_for_specific_entry(request, entry_id)
 
 
 @login_required
 def create_entry(request, topic_id):
+    """ View for render page with clear form for create entry
+    then process data from form and save if them is valid."""
     
-    return create_entry_service(request, topic_id)
+    return create_entry_and_save(request, topic_id)
 
 
 @login_required
 def edit_entry(request, entry_id):
+    """ View for render page with existing data then process
+    data and save changes if they is valid."""
     
-    return edit_entry_service(request, entry_id)
+    return edit_entry_and_save(request, entry_id)
 
 
 @login_required
 def delete_entry(request, entry_id):
+    """ Delete entry and all comments witch belongs to it"""
 
-    return delete_entry_service(request, entry_id)
+    return delete_entry_and_its_comments(request, entry_id)
 
 
 @login_required
 def delete_comment(request, entry_id, comment_id):
+    """ Delete specific comment for entry and its subcomments."""
    
-    return delete_comment_service(request, entry_id, comment_id)
+    return delete_main_comment_and_its_subcomment(request, entry_id, comment_id)
 
 
 @login_required
-def answer_on_comment(request, entry_id, comment_id, comment_answer_id):
-    
-    entry = Entry.objects.get(id=entry_id)
-    topic_id = entry.topic.id
+def add_subcomment(request, entry_id, comment_id, comment_answer_id):
+    """ Add subcomment for specific comment and write it to mongodb"""
 
-    add_answer_on_comment(request, comment_id, comment_answer_id)   
-  
-    return redirect('social_networks:entry_page', topic_id=topic_id, entry_id=entry_id)
+    return add_subcomment_for_specific_comment(request, entry_id, comment_id, comment_answer_id)
 
 
 @login_required
-def delete_comment_answer(request, entry_id, comment_id, answer_id):
-    entry = Entry.objects.get(id=entry_id)
-    topic_id = entry.topic.id
+def delete_subcomment(request, entry_id, comment_id, answer_id):
+    """ Delete subcomment and its subcomments."""
 
-    delete_comment_answer_service(request, comment_id, answer_id)
-
-    return redirect('social_networks:entry_page', topic_id=topic_id, entry_id=entry_id)
+    return delete_subcomment_and_its_subcomments(request, entry_id, comment_id, answer_id)
 
 
 @csrf_exempt
 @login_required
 def add_like(request, entry_id):
-  if request.method == "POST":
+    """ Add like for specific entry and send amount likes 
+    and dislikes on frontend for dynamic changing."""
 
-    add_like_service(request, entry_id)
-    
-    amount_likes = Like.objects.filter(entry=entry_id).count()
-    amount_dislikes = DisLike.objects.filter(entry=entry_id).count()
+    add_like_for_specific_entry(request, entry_id)
+    amount_likes_and_dislikes = get_amount_likes_and_dislikes(entry_id)
 
-    content = {
-      'amount_likes': amount_likes,
-      'amount_dislikes': amount_dislikes,
-    }
-
-    return JsonResponse(content)
+    return JsonResponse(amount_likes_and_dislikes)
 
 
 @csrf_exempt
 @login_required
 def add_dislike(request, entry_id):
-    add_dislike_service(request, entry_id)
+    """ Add dislike for specific entry and send amount likes 
+    and dislikes on frontend for dynamic changeing."""
 
-    amount_likes = Like.objects.filter(entry=entry_id).count()
-    amount_dislikes = DisLike.objects.filter(entry=entry_id).count()
+    add_dislike_for_specific_entry(request, entry_id)
+    amount_likes_and_dislikes = get_amount_likes_and_dislikes(entry_id)
 
-    content = {
-    'amount_likes': amount_likes,
-    'amount_dislikes': amount_dislikes,
-    }
-
-    return JsonResponse(content)
-
+    return JsonResponse(amount_likes_and_dislikes)
 
 
 @login_required
-def clear_mongodb(request):
+def delete_all_comments_from_mongodb(request):
+    """ Delete all comments from mongodb if 
+    user is superuser and redirect on index page"""
+
     if request.user.is_superuser:
-        collection = get_comments_collection()
-        collection.remove()
-        return redirect('social_networks:index')
+        return delete_comments_from_mongodb()
     else:
         return HttpResponseNotFound("Вы не можете удалять дб")

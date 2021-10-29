@@ -8,13 +8,13 @@ app_name = 'social_networks'
 
 urlpatterns = [
     # Clear mongodb
-    path('clear/mongodb', views.clear_mongodb, name="clear_mongodb"),
+    path('delete/all/comments/mongodb', views.delete_all_comments_from_mongodb, name="delete_all_comments_from_mongodb"),
     # Home page.
-    path('', views.IndexView.as_view(), name='index'),
+    path('', views.index, name='index'),
     # Page with list of topics.
-    path('topics_list', views.TopicsListView.as_view(), name='topics_list'),
+    path('topics_list', views.topics_list, name='topics_list'),
     # Page with entries which belong specific topic.
-    path('entries/xxx<int:topic_id>', views.entries, name="entries"),
+    path('entries/xxx<int:topic_id>', views.entries_list, name="entries"),
     # Page of specific entry.
     path('entry/page/xxx<int:topic_id>/xxx<int:entry_id>', views.entry_page, name="entry_page"),
     # Create comment.
@@ -29,11 +29,11 @@ urlpatterns = [
     path('delete/comment/xxx<int:entry_id>xxx/xxx<str:comment_id>', views.delete_comment, name='delete_comment'),
     # Create answer on comment
     path('answer/on/comment/xxx<int:entry_id>/xxx<str:comment_id>/xxx<str:comment_answer_id>',
-        views.answer_on_comment,
+        views.add_subcomment,
         name='answer_on_comment'),
     # Delete answer on comment.
     path('delete/answer/on/comment/xxx<int:entry_id>/xxx<str:comment_id>/xxx<str:answer_id>',
-        views.delete_comment_answer,
+        views.delete_subcomment,
         name="delete_comment_answer"),
     # Add like
     path('add_like/xxx<int:entry_id>/', views.add_like, name="add_like"),
