@@ -1,8 +1,11 @@
+from social_networks.models import Entry
 from .services_mongodb import get_comments_collection
 from datetime import datetime
 from bson.objectid import ObjectId
 from social_networks.forms import CommentForm, AnswerOnCommentForm
 from django.http import Http404
+from django.shortcuts import redirect
+from django.http import JsonResponse, HttpResponseNotFound
 
 import json
 from bson import json_util
@@ -12,7 +15,11 @@ from bson import json_util
 def parse_json(data):
     return json.loads(json_util.dumps(data))
 
+
 def create_comment_service(request, entry_id):
+    
+    entry = Entry.objects.get(id=entry_id)
+    topic_id = entry.topic_id
 
     if request.method == "POST":
         comment_form = CommentForm(request.POST)
@@ -36,9 +43,25 @@ def create_comment_service(request, entry_id):
             if request.is_ajax():
                 correct_id = parse_json(comment_for_db["_id"])
                 comment_for_db["_id"] = correct_id
-                return comment_for_db
-    
-    return False
+                return JsonResponse({"comment": comment_for_db})
+
+    return redirect('social_networks:entry_page', topic_id=topic_id, entry_id=entry_id)
+
+
+def delete_comment_service(request, entry_id, comment_id):
+    entry = Entry.objects.get(id=entry_id)
+    topic_id = entry.topic.id
+
+    comments_collection = get_comments_collection()
+    username = request.user.username
+    comment = comments_collection.find_one({"_id": ObjectId(comment_id), "comment_author": username})
+    if comment:
+        # Delete comment
+        comments_collection.remove({"_id": ObjectId(comment_id)})
+        return redirect('social_networks:entry_page', topic_id=topic_id, entry_id=entry_id)
+
+    else:
+        return HttpResponseNotFound("Вы не можете удалить комментарий")
 
 
 def finds_specific_comment_and_add_answer(answers, answer_id, comment_text, comment_author):
