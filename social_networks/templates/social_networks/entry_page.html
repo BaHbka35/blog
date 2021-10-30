@@ -11,7 +11,7 @@
         <main>
             {% block content %}
 
-                <a href="{% url 'social_networks:entries' topic_id %}">Назад</a>
+                <a href="{% url 'social_networks:entries_list' topic_id %}">Назад</a>
                 
                 <div class="main-div">
                   <div>
@@ -64,7 +64,7 @@
                           </div>
 
                           <div id="{{ comment_lvl_1.id }}" class="not-seen">{# comment_lvl_2#}
-                            <form name="answer_comment_form" action="{% url 'social_networks:answer_on_comment' entry.id comment_lvl_1.id comment_lvl_1.id %}" method="POST">
+                            <form name="answer_comment_form" action="{% url 'social_networks:add_subcomment' entry.id comment_lvl_1.id comment_lvl_1.id %}" method="POST">
                               {% csrf_token %}
                               {% for field in answer_comment_form %}
                                 <p>
@@ -78,7 +78,7 @@
                         </div>
 
                         <ul class="list-group">
-                          {% for comment_lvl_2 in comment_lvl_1.answers %}
+                          {% for comment_lvl_2 in comment_lvl_1.subcomments %}
                             <li class="list-group-item comment_2 list-margin entry-page-lists">
                               <div>
                                 <div class="main-div">
@@ -92,7 +92,7 @@
                                 </div>
                                 <div class="main-div">
                                   <div class="delete-button">
-                                    <form name="delete_comment_answer" action="{% url 'social_networks:delete_comment_answer' entry.id comment_lvl_1.id comment_lvl_2.id %}" method="post">
+                                    <form name="delete_comment_answer" action="{% url 'social_networks:delete_subcomment' entry.id comment_lvl_1.id comment_lvl_2.id %}" method="post">
                                       {% csrf_token %}
                                       <button class="btn btn-link btn-sm" name="submit">delete</button>
                                     </form>
@@ -103,7 +103,7 @@
                                 </div>
                                 {# answer #}
                                 <div id="{{ comment_lvl_2.id }}" class="not-seen">
-                                  <form name="answer_comment_form_lvl_2" action="{% url 'social_networks:answer_on_comment' entry.id comment_lvl_1.id comment_lvl_2.id %}" method="POST">
+                                  <form name="answer_comment_form_lvl_2" action="{% url 'social_networks:add_subcomment' entry.id comment_lvl_1.id comment_lvl_2.id %}" method="POST">
                                     {% csrf_token %}
                                     {% for field in answer_comment_form %}
                                       <p>
@@ -117,7 +117,7 @@
                               </div>
 
                                 {# comments #}
-                                {% for comment_lvl_3 in comment_lvl_2.answers %}
+                                {% for comment_lvl_3 in comment_lvl_2.subcomments %}
                                   <ul class="list-group">
                                     <li class="list-group-item comment_3 list-margin entry-page-lists">
                                         <div>
@@ -130,7 +130,7 @@
                                                 </div>
                                             </div>
                                             <div class="delete-button">
-                                            <form name="delete_comment_lvl_3" action="{% url 'social_networks:delete_comment_answer' entry.id comment_lvl_1.id comment_lvl_3.id %}" method="post">
+                                            <form name="delete_comment_lvl_3" action="{% url 'social_networks:delete_subcomment' entry.id comment_lvl_1.id comment_lvl_3.id %}" method="post">
                                                 {% csrf_token %}
                                                 <button class="btn btn-link btn-sm" name="submit">delete</button>
                                             </form>
@@ -192,7 +192,8 @@
 
                         let comment_author = result["comment_author"]
                         let comment_text = result["comment_text"]
-                        let comment_id = result["_id"]["$oid"] // by default {"_id": {"$oid": "abc123"}}
+                        let comment_id = result["_id"]//["$oid"] // by default {"_id": {"$oid": "abc123"}}
+                        console.log(comment_id)
                         let entry_id = result["entry_id"]
                         
                         $(".main-comments").append(

@@ -1,1 +1,0 @@
-MONGODB_LINK = "mongodb+srv://Ivan:Qwerty@cluster0.rrt4o.mongodb.net/App?retryWrites=true&w=majority"

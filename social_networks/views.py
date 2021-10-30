@@ -8,18 +8,18 @@ from django.http import HttpResponseNotFound, JsonResponse
 from .services.services import render_page_with_topics_list, \
     render_page_with_entries_for_current_topic
 
-from .services.services_comments import create_comment_comment_for_specific_entry, \
+from .services.comments_sevices import create_comment_for_specific_entry, \
     delete_main_comment_and_its_subcomment,\
     add_subcomment_for_specific_comment, \
     delete_subcomment_and_its_subcomments
 
-from .services.services_entry import render_page_with_specific_entry, \
+from .services.entry_services import render_page_with_specific_entry, \
     edit_entry_and_save, create_entry_and_save, delete_entry_and_its_comments
 
-from .services.services_like_dislike import add_like_for_specific_entry, \
+from .services.like_dislike_services import add_like_for_specific_entry, \
     add_dislike_for_specific_entry, get_amount_likes_and_dislikes
 
-from .services.services_mongodb import delete_comments_from_mongodb
+from .services.mongodb_services import delete_comments_from_mongodb
 
 
 def index(request):
@@ -53,7 +53,7 @@ def entry_page(request, topic_id, entry_id):
 def create_comment(request, topic_id, entry_id):
     """ Create comment for specific entry and writes them to mongodb"""
 
-    return create_comment_comment_for_specific_entry(request, entry_id)
+    return create_comment_for_specific_entry(request, entry_id)
 
 
 @login_required

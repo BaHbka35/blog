@@ -15,7 +15,7 @@
                 <ul class="list-group">
                     {% for topic in topics %}
                         <li class="list-group-item list-margin list-item-background">
-                            <a href="{% url 'social_networks:entries' topic.id %}">{{ topic.name }}</a>
+                            <a href="{% url 'social_networks:entries_list' topic.id %}">{{ topic.name }}</a>
                         </li>
                     {% endfor %}
                 </ul>

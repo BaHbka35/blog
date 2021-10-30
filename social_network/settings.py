@@ -137,3 +137,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 LOGIN_URL = '/users/sign_in/'
+
+
+MONGODB_LINK_API = os.getenv("MONGODB_LINK_API")

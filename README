@@ -1,5 +1,4 @@
-create virtual enviroment and install all that "require.txt" contain
 
-create python file in social_networks/mongodb_data.py
-and create variable
-MONGODB_LINK = "mongodb+srv://User_name:Password@cluster0.rrt4o.mongodb.net/your_db?retryWrites=true&w=majority"
+Create virtual environment and install all dipendecies from requirements.txt
+
+Create environment variable MONGODB_LINK_API with your API link

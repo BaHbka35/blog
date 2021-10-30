@@ -1,12 +1,12 @@
 from django.shortcuts import redirect
 
-from .mongodb_data import MONGODB_LINK
+from django.conf import settings
 import pymongo
 
 
 # Function for get collection with contains comments
 def get_comments_collection():
-    client = pymongo.MongoClient(MONGODB_LINK)
+    client = pymongo.MongoClient(settings.MONGODB_LINK_API)
     db = client.App
     collection = db.comments
     

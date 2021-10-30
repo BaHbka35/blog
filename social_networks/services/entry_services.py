@@ -3,9 +3,8 @@ from django.http import HttpResponseNotFound
 
 from social_networks.models import Topic, Entry, Like, DisLike
 from social_networks.forms import CreateEntryForm, CommentForm, AnswerOnCommentForm
-from .services_mongodb import get_comments
 
-from .services_mongodb import get_comments_collection
+from .mongodb_services import get_comments, get_comments_collection
 
 def edit_entry_and_save(request, entry_id):
     entry = Entry.objects.get(id=entry_id)
@@ -99,7 +98,7 @@ def delete_entry_and_its_comments(request, entry_id):
         comments_collection.remove({'entry_id': entry_id})
         entry.delete()
 
-        return redirect('social_networks:entries', topic_id=topic.id)
+        return redirect('social_networks:entries_list', topic_id=topic.id)
 
     else:
         return HttpResponseNotFound("Вы не можете удалить эту запись")
