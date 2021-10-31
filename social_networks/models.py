@@ -2,6 +2,9 @@ from django.db import models
 from django.contrib.auth.models import User
 
 class Topic(models.Model):
+    """
+    Topic model defines the topics on which the entries will be distributed.
+    """
 
     name = models.CharField(max_length=200)
 
@@ -10,6 +13,9 @@ class Topic(models.Model):
 
 
 class Entry(models.Model):
+    """
+    Entry model definds entry that every user can create
+    """
 
     class Meta:
         verbose_name_plural = "Entries"
@@ -28,18 +34,24 @@ class Entry(models.Model):
 
 
 class Like(models.Model):
+    """
+    Like model definds likes for specific entry
+    """
 
-  entry = models.ForeignKey(Entry, on_delete=models.CASCADE)
-  user = models.ForeignKey(User, on_delete=models.CASCADE)
+    entry = models.ForeignKey(Entry, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
 
-  def __str__(self):
-    return f"user:{self.user_id} entry:{self.entry_id}"
+    def __str__(self):
+        return f"user:{self.user_id} entry:{self.entry_id}"
 
 
 class DisLike(models.Model):
+    """
+    Disike model definds dislikes for specific entry
+    """
 
-  entry = models.ForeignKey(Entry, on_delete=models.CASCADE)
-  user = models.ForeignKey(User, on_delete=models.CASCADE)
+    entry = models.ForeignKey(Entry, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
 
-  def __str__(self):
-    return f"user:{self.user_id} entry:{self.entry_id}"
+    def __str__(self):
+        return f"user:{self.user_id} entry:{self.entry_id}"

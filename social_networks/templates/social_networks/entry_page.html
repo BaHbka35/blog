@@ -24,7 +24,7 @@
                 <p>{{ entry.text }}</p>
                 <div class="main-div">
                   <div>
-                    <p id="amount_likes">{{ amount_likes }}</p>  
+                    <p id="amount_likes">{{ amount_likes_and_dislikes.amount_likes }}</p>  
                   </div>
                   <div>
                     <button class="gradient-button like-button" id="add_like">like</button>
@@ -32,7 +32,7 @@
                 </div>
                 <div class="main-div">
                   <div>
-                    <p id="amount_dislikes">{{ amount_dislikes }}</p>  
+                    <p id="amount_dislikes">{{ amount_likes_and_dislikes.amount_dislikes }}</p>  
                   </div>
                   <div>
                     <button class="gradient-button dislike-button" id="add_dislike">dislike</button>
@@ -54,7 +54,7 @@
                           </div>
                           <div class="main-div">
                             <div>
-                              <form action="{% url 'social_networks:delete_comment' entry.id comment_lvl_1.id %}">
+                              <form action="{% url 'comments:delete_comment' entry.id comment_lvl_1.id %}">
                                   <button class="btn btn-link btn-sm" name="submit">delete</button>
                               </form>
                             </div>
@@ -64,7 +64,7 @@
                           </div>
 
                           <div id="{{ comment_lvl_1.id }}" class="not-seen">{# comment_lvl_2#}
-                            <form name="answer_comment_form" action="{% url 'social_networks:add_subcomment' entry.id comment_lvl_1.id comment_lvl_1.id %}" method="POST">
+                            <form name="answer_comment_form" action="{% url 'comments:add_subcomment' entry.id comment_lvl_1.id comment_lvl_1.id %}" method="POST">
                               {% csrf_token %}
                               {% for field in answer_comment_form %}
                                 <p>
@@ -92,7 +92,7 @@
                                 </div>
                                 <div class="main-div">
                                   <div class="delete-button">
-                                    <form name="delete_comment_answer" action="{% url 'social_networks:delete_subcomment' entry.id comment_lvl_1.id comment_lvl_2.id %}" method="post">
+                                    <form name="delete_comment_answer" action="{% url 'comments:delete_subcomment' entry.id comment_lvl_1.id comment_lvl_2.id %}" method="post">
                                       {% csrf_token %}
                                       <button class="btn btn-link btn-sm" name="submit">delete</button>
                                     </form>
@@ -103,7 +103,7 @@
                                 </div>
                                 {# answer #}
                                 <div id="{{ comment_lvl_2.id }}" class="not-seen">
-                                  <form name="answer_comment_form_lvl_2" action="{% url 'social_networks:add_subcomment' entry.id comment_lvl_1.id comment_lvl_2.id %}" method="POST">
+                                  <form name="answer_comment_form_lvl_2" action="{% url 'comments:add_subcomment' entry.id comment_lvl_1.id comment_lvl_2.id %}" method="POST">
                                     {% csrf_token %}
                                     {% for field in answer_comment_form %}
                                       <p>
@@ -130,7 +130,7 @@
                                                 </div>
                                             </div>
                                             <div class="delete-button">
-                                            <form name="delete_comment_lvl_3" action="{% url 'social_networks:delete_subcomment' entry.id comment_lvl_1.id comment_lvl_3.id %}" method="post">
+                                            <form name="delete_comment_lvl_3" action="{% url 'comments:delete_subcomment' entry.id comment_lvl_1.id comment_lvl_3.id %}" method="post">
                                                 {% csrf_token %}
                                                 <button class="btn btn-link btn-sm" name="submit">delete</button>
                                             </form>
@@ -153,7 +153,7 @@
 
                 
                 <div id="div-comment_form_main">
-                  <form id="comment_form_main" name="comment_form" action="{% url 'social_networks:create_comment' topic_id entry.id %}" method="POST">
+                  <form id="comment_form_main" name="comment_form" action="{% url 'comments:create_comment' topic_id entry.id %}" method="POST">
                     {% csrf_token %}
                     {% for field in comment_form %}
                       <span class="label-size">{{ field.label_tag}}</span><br>
@@ -183,7 +183,7 @@
                     method: "POST",
                     dataType: "json",
                     data: $("#comment_form_main").serialize(),
-                    url: '{% url "social_networks:create_comment" topic_id entry.id %}',
+                    url: '{% url "comments:create_comment" topic_id entry.id %}',
                     success: function(data){
 
                         console.log(data)

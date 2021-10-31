@@ -2,59 +2,73 @@ from social_networks.models import Entry, Like, DisLike
 
 
 def add_like_for_specific_entry(request, entry_id):
+    """
+    Adds uniqu like for specific_entry
+    """
+
     entry = Entry.objects.get(id=entry_id)
-    user = request.user
-    user_id = user.id
+    current_user = request.user
+    current_user_id = current_user.id
 
-    is_like = []
-    try:
-        is_like = Like.objects.get(entry=entry_id, user=user_id)
-    
-    except:
-        if is_like:
-            pass
-        else:
-            is_dislike = []
-            try:
-                is_dislike = DisLike.objects.get(entry=entry_id, user=user_id)
-            except:
-                pass
+    like = _get_like_from_current_user(entry_id, current_user_id)
+    if not like:
 
-            if is_dislike:
-                is_dislike.delete()
+        dislike = _get_dislike_from_current_user(entry_id, current_user_id)
+        if dislike:
+            dislike.delete()
 
-            like = Like.objects.create(entry=entry, user=user)
-            like.save()
+        like = Like.objects.create(entry=entry, user=current_user)
+        like.save()
 
 
 def add_dislike_for_specific_entry(request, entry_id):
+    """
+    Adds uniqu dislike for specific_entry
+    """
 
     entry = Entry.objects.get(id=entry_id)
-    user = request.user
-    user_id = user.id
+    current_user = request.user
+    current_user_id = current_user.id
 
-    is_dislike = []
+    dislike = _get_dislike_from_current_user(entry_id, current_user_id)
+    if not dislike:
+
+        like = _get_like_from_current_user(entry_id, current_user_id)
+        if like:
+            like.delete()
+
+        dislike = DisLike.objects.create(entry=entry, user=current_user)
+        dislike.save()
+
+
+def _get_like_from_current_user(entry_id, current_user_id):
+    """
+    Returns like from current user if like exists
+    """
+
     try:
-        is_dislike = DisLike.objects.get(entry=entry_id, user=user_id)
+        like = Like.objects.get(entry=entry_id, user=current_user_id)
+        return like
+    except Like.DoesNotExist:
+        return False
 
-    except:
-        if is_dislike:
-            pass
-        else:
-            is_like = []
-            try:
-                is_like = Like.objects.get(entry=entry_id, user=user_id)
-            except:
-                pass
 
-            if is_like:
-                is_like.delete()
+def _get_dislike_from_current_user(entry_id, current_user_id):
+    """
+    Returns dislike from current user if dislike exists
+    """
 
-            dislike = DisLike.objects.create(entry=entry, user=user)
-            dislike.save()
+    try:
+        dislike = DisLike.objects.get(entry=entry_id, user=current_user_id)
+        return dislike
+    except DisLike.DoesNotExist:
+        return False
 
 
 def get_amount_likes_and_dislikes(entry_id):
+    """
+    Returns amount likes and dislikes for specific entry.
+    """
 
     amount_likes = Like.objects.filter(entry=entry_id).count()
     amount_dislikes = DisLike.objects.filter(entry=entry_id).count()
