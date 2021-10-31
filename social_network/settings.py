@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     # My apps
     'social_networks',
     'users',
+    'comments'
 ]
 
 MIDDLEWARE = [

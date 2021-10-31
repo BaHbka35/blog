@@ -4,6 +4,10 @@ from .models import Entry
 
 
 class CreateEntryForm(ModelForm):
+    """
+    Form for creating new entry.
+    """
+
     class Meta:
         model = Entry
         fields = ['title', 'text']
@@ -11,11 +15,3 @@ class CreateEntryForm(ModelForm):
             'title': forms.TextInput(attrs={}),
             'text': forms.Textarea(attrs={})
         }
-
-class CommentForm(forms.Form):
-  comment = forms.CharField(label="Add new comment", widget=forms.TextInput(attrs={
-    "id": 'main_form_comment'}))
-
-class AnswerOnCommentForm(forms.Form):
-  comment = forms.CharField(label="Answer")
-  
